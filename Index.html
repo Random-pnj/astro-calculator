@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Calculateur astro NPF – GPS & capteurs corrigé</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#0b1020;color:#eaeaf0;padding:20px;max-width:1000px;margin:auto}
+h1,h2{text-align:center}
+.card{background:#151b3a;padding:20px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-top:20px}
+label{display:block;margin-top:12px;font-weight:bold}
+input,select{width:100%;padding:8px;margin-top:5px;border-radius:6px;border:none;font-size:1rem}
+button{margin-top:15px;width:100%;padding:12px;font-size:1.1rem;background:#6b7cff;color:white;border:none;border-radius:10px;cursor:pointer}
+button:hover{background:#8391ff}
+.result{margin-top:20px;font-size:1.3rem;text-align:center;color:#9effb0;font-weight:bold}
+.small{font-size:.85rem;color:#b7bbff;text-align:center}
+.value{font-weight:bold;color:#9effb0}
+</style>
+</head>
+<body><h1>🌌 Calculateur astro NPF (GPS + orientation)</h1>
+<p class="small">⚠️ OBLIGATOIRE : ouvrir cette page en <strong>HTTPS</strong> (ou localhost)</p><div class="card">
+<h2>📍 Position GPS</h2>
+<button onclick="getLocation()">📡 Autoriser GPS</button>
+<p class="small">Latitude : <span id="lat" class="value">--</span>°</p>
+</div><div class="card">
+<h2>📷 Optique</h2>
+<label>Profil boîtier</label>
+<select id="camera" onchange="setCamera()">
+<option value="5.97">Sony A7II</option>
+<option value="5.94">Sony A7III</option>
+<option value="3.9">APS-C</option>
+</select><label>Focale (mm)</label> <input id="focal" type="number" value="35" min="1" max="400">
+
+<label>Ouverture (f/)</label> <input id="aperture" type="number" value="2.8" step="0.1">
+
+<label>Taille pixel (µm)</label> <input id="pixel" type="number" value="5.97" step="0.01">
+
+</div><div class="card">
+<h2>🧭 Orientation téléphone</h2>
+<button onclick="requestOrientation()">📱 Autoriser capteurs</button>
+<button onclick="freezeOrientation()">🎯 Figer & calculer</button>
+<p class="small">Azimut : <span id="az" class="value">--</span>° | Hauteur : <span id="alt" class="value">--</span>°</p>
+</div><div class="result" id="result"></div><script>
+let currentAz=null, currentAlt=null, latitude=null;
+
+function setCamera(){ pixel.value=camera.value; }
+
+// --- GPS ---
+function getLocation(){
+ if(!navigator.geolocation){ alert('GPS non supporté'); return; }
+ navigator.geolocation.getCurrentPosition(p=>{
+   latitude=p.coords.latitude.toFixed(4);
+   lat.innerText=latitude;
+ }, err=>{ alert('GPS refusé'); });
+}
+
+// --- ORIENTATION ---
+function requestOrientation(){
+ if(typeof DeviceOrientationEvent==='undefined'){ alert('Capteurs non supportés'); return; }
+ if(typeof DeviceOrientationEvent.requestPermission==='function'){
+   DeviceOrientationEvent.requestPermission().then(r=>{
+     if(r==='granted') window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+     else alert('Permission refusée');
+   });
+ } else {
+   window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+ }
+}
+
+function handleOrientation(e){
+ if(e.alpha===null) return;
+ currentAz=(360-e.alpha).toFixed(1); // vrai nord
+ currentAlt=(90-Math.abs(e.beta)).toFixed(1);
+ az.innerText=currentAz;
+ alt.innerText=currentAlt;
+}
+
+// --- ASTRO ---
+function declination(lat, alt, az){
+ const r=Math.PI/180;
+ return Math.asin(Math.sin(lat*r)*Math.sin(alt*r)+Math.cos(lat*r)*Math.cos(alt*r)*Math.cos(az*r))/r;
+}
+
+function freezeOrientation(){
+ if(latitude===null||currentAz===null){ result.innerText='❌ GPS ou capteurs non actifs'; return; }
+ const f=+focal.value, N=+aperture.value, p=+pixel.value;
+ const dec=declination(latitude, currentAlt, currentAz);
+ const t=(35*N+30*p)/(f*Math.cos(dec*Math.PI/180));
+ result.innerText=`⏱️ ${t.toFixed(2)} s  (δ=${dec.toFixed(1)}°)`;
+}
+</script><p class="small">📱 iOS/Android : HTTPS obligatoire, calibrer la boussole avant usage.<br>
+Résultat optimisé pour stacking astro (Siril / DSS).</p></body>
+</html>
