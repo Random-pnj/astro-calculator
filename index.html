@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Calculateur astro NPF – GPS & capteurs corrigé</title>
+<title>Calculateur Astro NPF – Calibration à plat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:Arial;background:#0b1020;color:#eaeaf0;padding:20px;max-width:1000px;margin:auto}
@@ -16,9 +16,9 @@ button:hover{background:#8391ff}
 .value{font-weight:bold;color:#9effb0}
 </style>
 </head>
-<body><h1>🌌 Calculateur astro NPF (GPS + orientation)</h1>
-<p class="small">⚠️ OBLIGATOIRE : ouvrir cette page en <strong>HTTPS</strong> (ou localhost)</p><div class="card">
-<h2>📍 Position GPS</h2>
+<body><h1>🌌 Calculateur Astro NPF – Calibration à plat</h1>
+<p class="small">Place le téléphone à plat pour calibrer l’horizon, puis pointe-le comme un viseur.</p><div class="card">
+<h2>📍 GPS</h2>
 <button onclick="getLocation()">📡 Autoriser GPS</button>
 <p class="small">Latitude : <span id="lat" class="value">--</span>°</p>
 </div><div class="card">
@@ -37,10 +37,12 @@ button:hover{background:#8391ff}
 </div><div class="card">
 <h2>🧭 Orientation téléphone</h2>
 <button onclick="requestOrientation()">📱 Autoriser capteurs</button>
-<button onclick="freezeOrientation()">🎯 Figer & calculer</button>
+<button onclick="calibrateFlat()">📐 Calibrer horizon à plat</button>
+<button onclick="freezeOrientation()">🎯 Figer orientation & calculer</button>
 <p class="small">Azimut : <span id="az" class="value">--</span>° | Hauteur : <span id="alt" class="value">--</span>°</p>
 </div><div class="result" id="result"></div><script>
 let currentAz=null, currentAlt=null, latitude=null;
+let offsetAlpha=0, offsetBeta=0;
 
 function setCamera(){ pixel.value=camera.value; }
 
@@ -68,10 +70,18 @@ function requestOrientation(){
 
 function handleOrientation(e){
  if(e.alpha===null) return;
- currentAz=(360-e.alpha).toFixed(1); // vrai nord
- currentAlt=(90-Math.abs(e.beta)).toFixed(1);
+ currentAz=(360-e.alpha-offsetAlpha).toFixed(1); // azimut corrigé
+ currentAlt=(90-Math.abs(e.beta-offsetBeta)).toFixed(1); // hauteur corrigée
  az.innerText=currentAz;
  alt.innerText=currentAlt;
+}
+
+// --- Calibration à plat ---
+function calibrateFlat(){
+ if(currentAz===null || currentAlt===null){ alert('Capteurs non actifs'); return; }
+ offsetAlpha = 360 - currentAz - 0; // horizon azimut zéro
+ offsetBeta = currentAlt - 0; // hauteur zéro
+ alert('Calibration à plat effectuée ✅');
 }
 
 // --- ASTRO ---
@@ -87,6 +97,5 @@ function freezeOrientation(){
  const t=(35*N+30*p)/(f*Math.cos(dec*Math.PI/180));
  result.innerText=`⏱️ ${t.toFixed(2)} s  (δ=${dec.toFixed(1)}°)`;
 }
-</script><p class="small">📱 iOS/Android : HTTPS obligatoire, calibrer la boussole avant usage.<br>
-Résultat optimisé pour stacking astro (Siril / DSS).</p></body>
+</script><p class="small">⚠️ iOS/Android : HTTPS obligatoire. Téléphone à plat pour calibration, puis pointer comme viseur. Optimisé pour stacking (Siril / DSS).</p></body>
 </html>
