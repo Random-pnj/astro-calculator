@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul Levage Tôle - Positionnement Œillets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .input-group {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        label {
+            display: inline-block;
+            width: 250px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="number"] {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            border-radius: 5px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .danger {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .optimal {
+            background-color: #d1ecf1;
+            border-left: 5px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        canvas {
+            border: 1px solid #bdc3c7;
+            margin: 20px auto;
+            display: block;
+            background-color: white;
+        }
+        .formula {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 Calcul de Levage de Tôle - Optimisation Œillets</h1>
+        
+        <div class="input-group">
+            <h2>Caractéristiques de la tôle</h2>
+            <div style="margin: 10px 0;">
+                <label>Longueur (mm):</label>
+                <input type="number" id="longueur" value="3000" min="100">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Largeur (mm):</label>
+                <input type="number" id="largeur" value="1500" min="100">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Épaisseur (mm):</label>
+                <input type="number" id="epaisseur" value="6" min="1" step="0.1">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Densité acier (kg/dm³):</label>
+                <input type="number" id="densite" value="7.85" step="0.01">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <h2>Position des œillets</h2>
+            <div style="margin: 10px 0;">
+                <label>Distance du bord long (mm):</label>
+                <input type="number" id="distBordLong" value="500" min="50">
+                <span style="margin-left: 10px; color: #7f8c8d;">Axe 3000mm</span>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Distance du bord court (mm):</label>
+                <input type="number" id="distBordCourt" value="250" min="50">
+                <span style="margin-left: 10px; color: #7f8c8d;">Axe 1500mm</span>
+            </div>
+        </div>
+
+        <button onclick="calculer()">🔍 Calculer la flèche et les contraintes</button>
+
+        <div id="resultats"></div>
+        <canvas id="schemaCanvas" width="800" height="500"></canvas>
+    </div>
+
+    <script>
+        function calculer() {
+            // Récupération des données
+            const L = parseFloat(document.getElementById('longueur').value);
+            const l = parseFloat(document.getElementById('largeur').value);
+            const e = parseFloat(document.getElementById('epaisseur').value);
+            const rho = parseFloat(document.getElementById('densite').value);
+            const dL = parseFloat(document.getElementById('distBordLong').value);
+            const dl = parseFloat(document.getElementById('distBordCourt').value);
+
+            // Calcul du poids
+            const volume = (L * l * e) / 1000000; // dm³
+            const poids = volume * rho; // kg
+            const charge = poids * 9.81; // N
+
+            // Dimensions de la zone supportée
+            const porteeL = L - 2 * dL; // Portée entre œillets axe long
+            const porteel = l - 2 * dl; // Portée entre œillets axe court
+
+            // Module d'élasticité acier
+            const E = 210000; // MPa = N/mm²
+
+            // Moment d'inertie par unité de largeur (poutre rectangulaire)
+            // I = b*h³/12, ici b=1mm, h=e
+            const I_unitaire = Math.pow(e, 3) / 12; // mm⁴ par mm de largeur
+
+            // Charge répartie par unité de surface
+            const q_surface = (poids * 9.81) / (L * l); // N/mm²
+
+            // === CALCUL FLÈCHE DIRECTION LONGITUDINALE (portée L) ===
+            // Modèle: plaque rectangulaire simplement supportée sur 4 côtés
+            // Mais nous simplifions en 2 poutres principales
+            
+            // Charge linéique sur la direction longue
+            const q_long = q_surface * l; // N/mm (charge totale / longueur)
+            
+            // Pour une poutre bi-encastrée aux extrémités (modèle conservateur)
+            // Flèche max = (5*q*L⁴)/(384*E*I)
+            // Pour poutre simplement appuyée: (5*q*L⁴)/(384*E*I)
+            
+            const I_long = I_unitaire * l; // Moment d'inertie total direction long
+            const fleche_long_mm = (5 * q_long * Math.pow(porteeL, 4)) / (384 * E * I_long);
+            
+            // === CALCUL FLÈCHE DIRECTION TRANSVERSALE (portée l) ===
+            const q_court = q_surface * L; // N/mm
+            const I_court = I_unitaire * L;
+            const fleche_court_mm = (5 * q_court * Math.pow(porteel, 4)) / (384 * E * I_court);
+
+            // La flèche réelle sera entre les deux (plaque bidimensionnelle)
+            // On prend la plus défavorable
+            const fleche_max_mm = Math.max(fleche_long_mm, fleche_court_mm);
+
+            // === CALCUL CONTRAINTE MAXIMALE ===
+            // Contrainte = M*y/I où M = moment max, y = distance fibre extrême
+            // Pour poutre simplement appuyée: M_max = q*L²/8
+            
+            const M_long = (q_long * Math.pow(porteeL, 2)) / 8; // N.mm
+            const y = e / 2; // mm (demi-épaisseur)
+            const contrainte_long = (M_long * y) / I_long; // MPa
+
+            const M_court = (q_court * Math.pow(porteel, 2)) / 8;
+            const contrainte_court = (M_court * y) / I_court;
+            
+            const contrainte_max = Math.max(contrainte_long, contrainte_court);
+
+            // Limite élastique acier doux ≈ 235 MPa
+            const limite_elastique = 235;
+            const coeff_securite = limite_elastique / contrainte_max;
+
+            // === CALCUL EFFORT DANS LES ÉLINGUES ===
+            // Hypothèse: angle d'ouverture de 60° (configuration standard)
+            const angle = 60; // degrés
+            const effort_vertical_par_brin = poids / 4; // kg
+            const effort_elingue = effort_vertical_par_brin / Math.cos(angle * Math.PI / 180);
+
+            // Affichage des résultats
+            let html = '<div class="results">';
+            html += '<h2>📊 Résultats du calcul</h2>';
+            
+            html += '<h3>Caractéristiques de la tôle</h3>';
+            html += '<table>';
+            html += `<tr><th>Paramètre</th><th>Valeur</th></tr>`;
+            html += `<tr><td>Dimensions</td><td>${L} × ${l} × ${e} mm</td></tr>`;
+            html += `<tr><td>Volume</td><td>${volume.toFixed(2)} dm³</td></tr>`;
+            html += `<tr><td><strong>Poids total</strong></td><td><strong>${poids.toFixed(1)} kg</strong></td></tr>`;
+            html += '</table>';
+
+            html += '<h3>Configuration de levage</h3>';
+            html += '<table>';
+            html += `<tr><td>Portée libre direction long (entre œillets)</td><td>${porteeL} mm</td></tr>`;
+            html += `<tr><td>Portée libre direction court (entre œillets)</td><td>${porteel} mm</td></tr>`;
+            html += `<tr><td>Rectangle d'accrochage</td><td>${porteeL} × ${porteel} mm</td></tr>`;
+            html += '</table>';
+
+            html += '<h3>⚠️ Flèche (déformation)</h3>';
+            html += '<table>';
+            html += `<tr><td>Flèche direction longitudinale</td><td><strong>${fleche_long_mm.toFixed(2)} mm</strong></td></tr>`;
+            html += `<tr><td>Flèche direction transversale</td><td><strong>${fleche_court_mm.toFixed(2)} mm</strong></td></tr>`;
+            html += `<tr><td><strong>Flèche maximale estimée</strong></td><td><strong>${fleche_max_mm.toFixed(2)} mm</strong></td></tr>`;
+            html += `<tr><td>Ratio flèche/portée max</td><td>1/${Math.round(Math.max(porteeL, porteel)/fleche_max_mm)}</td></tr>`;
+            html += '</table>';
+
+            // Évaluation de la flèche
+            if (fleche_max_mm < 5) {
+                html += '<div class="optimal"><strong>✅ Excellent:</strong> Flèche très faible, déformation négligeable.</div>';
+            } else if (fleche_max_mm < 10) {
+                html += '<div class="results"><strong>✅ Bon:</strong> Flèche acceptable pour le levage.</div>';
+            } else if (fleche_max_mm < 20) {
+                html += '<div class="warning"><strong>⚠️ Attention:</strong> Flèche notable, surveiller la déformation.</div>';
+            } else {
+                html += '<div class="danger"><strong>❌ Risque:</strong> Flèche importante, risque de déformation permanente!</div>';
+            }
+
+            html += '<h3>💪 Contraintes mécaniques</h3>';
+            html += '<table>';
+            html += `<tr><td>Contrainte max direction long</td><td>${contrainte_long.toFixed(1)} MPa</td></tr>`;
+            html += `<tr><td>Contrainte max direction court</td><td>${contrainte_court.toFixed(1)} MPa</td></tr>`;
+            html += `<tr><td><strong>Contrainte maximale</strong></td><td><strong>${contrainte_max.toFixed(1)} MPa</strong></td></tr>`;
+            html += `<tr><td>Limite élastique acier S235</td><td>${limite_elastique} MPa</td></tr>`;
+            html += `<tr><td><strong>Coefficient de sécurité</strong></td><td><strong>${coeff_securite.toFixed(1)}</strong></td></tr>`;
+            html += '</table>';
+
+            if (coeff_securite > 3) {
+                html += '<div class="optimal"><strong>✅ Excellent:</strong> Sécurité très élevée, aucun risque de déformation plastique.</div>';
+            } else if (coeff_securite > 1.5) {
+                html += '<div class="results"><strong>✅ Bon:</strong> Coefficient de sécurité acceptable.</div>';
+            } else if (coeff_securite > 1) {
+                html += '<div class="warning"><strong>⚠️ Limite:</strong> Coefficient faible, proche de la limite élastique!</div>';
+            } else {
+                html += '<div class="danger"><strong>❌ DANGER:</strong> Déformation plastique permanente probable!</div>';
+            }
+
+            html += '<h3>🔗 Efforts dans les élingues</h3>';
+            html += '<table>';
+            html += `<tr><td>Effort vertical par brin (4 brins)</td><td>${effort_vertical_par_brin.toFixed(1)} kg</td></tr>`;
+            html += `<tr><td>Angle d'élingue (hypothèse)</td><td>${angle}°</td></tr>`;
+            html += `<tr><td><strong>Effort réel dans chaque brin</strong></td><td><strong>${effort_elingue.toFixed(1)} kg</strong></td></tr>`;
+            html += '</table>';
+
+            html += '<div class="optimal"><strong>ℹ️ Info:</strong> Pour un palan de 1000 kg, vous avez une sécurité de ' + (1000/poids).toFixed(1) + ':1 sur la charge totale.</div>';
+
+            html += '</div>';
+
+            // Recommandations optimales
+            html += '<div class="optimal">';
+            html += '<h2>💡 Recommandations</h2>';
+            
+            if (fleche_max_mm > 10) {
+                const nouveau_dL = Math.round(dL * 0.7);
+                const nouveau_dl = Math.round(dl * 0.7);
+                html += `<p><strong>Pour réduire la flèche:</strong> Rapprochez les œillets vers le centre.</p>`;
+                html += `<p>Essayez: ${nouveau_dL}mm du bord long et ${nouveau_dl}mm du bord court.</p>`;
+            } else {
+                html += `<p><strong>✅ Position actuelle optimale!</strong></p>`;
+                html += `<p>Flèche: ${fleche_max_mm.toFixed(2)}mm - Contrainte: ${contrainte_max.toFixed(1)}MPa - Sécurité: ${coeff_securite.toFixed(1)}</p>`;
+            }
+            
+            html += '</div>';
+
+            document.getElementById('resultats').innerHTML = html;
+
+            // Dessiner le schéma
+            dessinerSchema(L, l, dL, dl, fleche_max_mm);
+        }
+
+        function dessinerSchema(L, l, dL, dl, fleche) {
+            const canvas = document.getElementById('schemaCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Échelle
+            const echelle = Math.min(600 / L, 400 / l);
+            const offsetX = 100;
+            const offsetY = 50;
+            
+            // Dessiner la tôle
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(offsetX, offsetY, L * echelle, l * echelle);
+            
+            // Remplissage léger
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+            ctx.fillRect(offsetX, offsetY, L * echelle, l * echelle);
+            
+            // Dessiner les œillets
+            ctx.fillStyle = '#e74c3c';
+            const rayon = 5;
+            
+            // 4 œillets
+            const positions = [
+                [offsetX + dL * echelle, offsetY + dl * echelle],
+                [offsetX + (L - dL) * echelle, offsetY + dl * echelle],
+                [offsetX + dL * echelle, offsetY + (l - dl) * echelle],
+                [offsetX + (L - dL) * echelle, offsetY + (l - dl) * echelle]
+            ];
+            
+            positions.forEach(pos => {
+                ctx.beginPath();
+                ctx.arc(pos[0], pos[1], rayon, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            // Dessiner les élingues
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 2;
+            const centreX = offsetX + (L * echelle) / 2;
+            const centreY = offsetY - 80;
+            
+            positions.forEach(pos => {
+                ctx.beginPath();
+                ctx.moveTo(pos[0], pos[1]);
+                ctx.lineTo(centreX, centreY);
+                ctx.stroke();
+            });
+            
+            // Point de levage
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.arc(centreX, centreY, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Cotes
+            ctx.strokeStyle = '#7f8c8d';
+            ctx.fillStyle = '#2c3e50';
+            ctx.lineWidth = 1;
+            ctx.font = '12px Arial';
+            
+            // Cote longueur totale
+            ctx.beginPath();
+            ctx.moveTo(offsetX, offsetY + l * echelle + 30);
+            ctx.lineTo(offsetX + L * echelle, offsetY + l * echelle + 30);
+            ctx.stroke();
+            ctx.fillText(`${L} mm`, offsetX + (L * echelle) / 2 - 20, offsetY + l * echelle + 45);
+            
+            // Cote largeur totale
+            ctx.beginPath();
+            ctx.moveTo(offsetX + L * echelle + 30, offsetY);
+            ctx.lineTo(offsetX + L * echelle + 30, offsetY + l * echelle);
+            ctx.stroke();
+            ctx.save();
+            ctx.translate(offsetX + L * echelle + 45, offsetY + (l * echelle) / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(`${l} mm`, -20, 0);
+            ctx.restore();
+            
+            // Distances œillets
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText(`${dL}mm`, offsetX + dL * echelle / 2 - 15, offsetY - 10);
+            ctx.fillText(`${dl}mm`, offsetX - 40, offsetY + dl * echelle / 2);
+            
+            // Flèche
+            ctx.fillStyle = '#e67e22';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(`Flèche max: ${fleche.toFixed(2)} mm`, offsetX + 10, offsetY + 20);
+            
+            // Légende
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '11px Arial';
+            ctx.fillText('● Œillets de levage', offsetX + 10, offsetY + l * echelle - 10);
+            ctx.fillText('Vue de dessus - tôle à plat', offsetX + L * echelle - 150, offsetY + l * echelle - 10);
+        }
+
+        // Calcul initial au chargement
+        window.onload = calculer;
+    </script>
+</body>
+</html>

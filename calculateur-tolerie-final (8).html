@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Tôlerie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #c7d2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .icon-box {
+            background: #6366f1;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .icon-box svg {
+            width: 32px;
+            height: 32px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+        
+        /* Panneau latéral fixe */
+        .main-grid > .card:first-child {
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        /* Scroll bar personnalisée pour le panneau fixe */
+        .main-grid > .card:first-child::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .main-grid > .card:first-child::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        .main-grid > .card:first-child::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .main-grid > .card:first-child::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1e40af;
+            margin-bottom: 16px;
+        }
+        
+        .info-box strong {
+            color: #1e3a8a;
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #c7d2fe;
+            margin-bottom: 16px;
+        }
+        
+        .result-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+        }
+        
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 2px solid #c7d2fe;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .table-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .table-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        
+        .totals-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .total-card {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #c7d2fe;
+        }
+        
+        .total-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .total-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        .total-unit {
+            font-size: 16px;
+            color: #6b7280;
+        }
+        
+        /* Plan de découpe */
+        .plan-decoupe-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .canvas-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+        
+        #cutting-canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #000;
+        }
+        
+        .legend-text {
+            font-size: 13px;
+            color: #374151;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .stat-box {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        /* Onglets */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+            color: #6b7280;
+        }
+        
+        .tab.active {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background: #f3f4f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Table d'édition des matériaux */
+        .materials-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .materials-table input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .materials-table input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .btn-save {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-save:hover {
+            background: #059669;
+        }
+        
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-reset:hover {
+            background: #dc2626;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 16px;
+            display: none;
+        }
+        
+        @media print {
+            /* Réinitialisation */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 10pt;
+                line-height: 1.3;
+                color: #000;
+                background: white;
+            }
+            
+            /* Masquer les éléments non nécessaires */
+            .tabs,
+            .btn-group,
+            .btn,
+            .main-grid > .card:first-child {
+                display: none !important;
+            }
+            
+            /* En-tête simple */
+            .header {
+                text-align: center;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #000;
+            }
+            
+            h1 {
+                font-size: 18pt;
+                margin-bottom: 5px;
+            }
+            
+            .header p {
+                font-size: 10pt;
+                color: #333;
+            }
+            
+            /* Tableau des pièces */
+            .card {
+                margin-bottom: 15px;
+            }
+            
+            .card-title {
+                font-size: 12pt;
+                font-weight: bold;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                border-bottom: 1px solid #000;
+            }
+            
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+            }
+            
+            th, td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align: center;
+                font-size: 9pt;
+            }
+            
+            th {
+                background-color: #e0e0e0;
+                font-weight: bold;
+            }
+            
+            /* Totaux */
+            .totals-section {
+                margin-bottom: 20px;
+                padding: 10px;
+                border: 2px solid #000;
+                page-break-after: always;
+            }
+            
+            .totals-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-top: 10px;
+            }
+            
+            .total-card {
+                text-align: center;
+                padding: 8px;
+                border: 1px solid #000;
+            }
+            
+            .total-label {
+                font-size: 8pt;
+                margin-bottom: 5px;
+            }
+            
+            .total-value {
+                font-size: 14pt;
+                font-weight: bold;
+            }
+            
+            .total-unit {
+                font-size: 10pt;
+            }
+            
+            /* Plan de découpe */
+            .plan-decoupe-section {
+                page-break-before: always;
+            }
+            
+            .plan-decoupe-section .card-title {
+                font-size: 14pt;
+            }
+            
+            .info-box {
+                padding: 8px;
+                margin: 10px 0;
+                background-color: #f0f0f0;
+                border: 1px solid #000;
+                font-size: 9pt;
+            }
+            
+            #cutting-canvas {
+                display: block;
+                margin: 15px auto;
+                max-width: 100%;
+                border: 1px solid #000;
+            }
+            
+            /* Statistiques */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+                margin: 15px 0;
+            }
+            
+            .stat-box {
+                text-align: center;
+                padding: 8px;
+                border: 1px solid #000;
+            }
+            
+            .stat-label {
+                font-size: 8pt;
+                margin-bottom: 3px;
+            }
+            
+            .stat-value {
+                font-size: 12pt;
+                font-weight: bold;
+            }
+            
+            /* Légende */
+            .legend {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5px;
+                margin-top: 10px;
+            }
+            
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 8pt;
+            }
+            
+            .legend-color {
+                width: 15px;
+                height: 15px;
+                border: 1px solid #000;
+            }
+            
+            /* Footer */
+            footer {
+                text-align: center;
+                font-size: 8pt;
+                margin-top: 20px;
+                padding-top: 10px;
+                border-top: 1px solid #000;
+            }
+            
+            /* Configuration de page */
+            @page {
+                size: A4 portrait;
+                margin: 15mm;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Désactiver le positionnement fixe sur mobile */
+            .main-grid > .card:first-child {
+                position: relative;
+                top: auto;
+                max-height: none;
+                overflow-y: visible;
+            }
+            
+            /* Réorganiser l'ordre sur mobile */
+            .main-grid {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Le panneau latéral passe en dernier sur mobile */
+            .main-grid > .card:first-child {
+                order: 2;
+            }
+            
+            /* Le tableau des pièces passe en premier sur mobile */
+            .main-grid > .card:last-child {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <div class="header-content">
+                <div class="title-section">
+                    <div class="icon-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>Calculateur de Tôlerie</h1>
+                        <p style="color: #6b7280; margin-top: 4px;">Calcul de découpe et prix matière</p>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="ajouterLigne()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Ajouter pièce
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        Imprimer
+                    </button>
+                    <button class="btn btn-danger" onclick="effacerTout()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Onglets -->
+        <div class="tabs">
+            <button class="tab active" onclick="changerOnglet('calculateur')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                </svg>
+                Calculateur
+            </button>
+            <button class="tab" onclick="changerOnglet('materiaux')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Éditer les matériaux
+            </button>
+        </div>
+
+        <!-- Contenu Calculateur -->
+        <div id="tab-calculateur" class="tab-content active">
+
+        <div class="main-grid">
+            <!-- Panneau latéral -->
+            <div class="card">
+                <div class="card-title">Paramètres de base</div>
+                
+                <!-- Sélection matériau -->
+                <div class="form-group">
+                    <label>Matériau</label>
+                    <select id="materiau" onchange="mettreAJourMateriau()">
+                        <option value="HEA etc|7.65|2">HEA etc (7.65 kg/dm³, 2 CHF/kg)</option>
+                        <option value="Inox Brossé|7.65|4.5">Inox Brossé (7.65 kg/dm³, 4.5 CHF/kg)</option>
+                        <option value="tôle brut acier|7.65|2">Tôle brut acier (7.65 kg/dm³, 2 CHF/kg)</option>
+                        <option value="Tole zincor|7.65|2">Tôle zincor (7.65 kg/dm³, 2 CHF/kg)</option>
+                        <option value="Inox|7.9|4.5">Inox (7.9 kg/dm³, 4.5 CHF/kg)</option>
+                        <option value="SPO inox|7.65|4.5">SPO inox (7.65 kg/dm³, 4.5 CHF/kg)</option>
+                        <option value="Alu brut|2.7|6.6">Alu brut (2.7 kg/dm³, 6.6 CHF/kg)</option>
+                        <option value="alu eloxé|2.7|6">Alu eloxé (2.7 kg/dm³, 6 CHF/kg)</option>
+                        <option value="Cuivre|8.96|30">Cuivre (8.96 kg/dm³, 30 CHF/kg)</option>
+                        <option value="verre|2.5|0">Verre (2.5 kg/dm³, 0 CHF/kg)</option>
+                    </select>
+                </div>
+                
+                <!-- Épaisseur -->
+                <div class="form-group">
+                    <label>Épaisseur (mm)</label>
+                    <select id="epaisseur" onchange="mettreAJourEpaisseur()">
+                        <option value="1">1 mm</option>
+                        <option value="1.5">1.5 mm</option>
+                        <option value="2">2 mm</option>
+                        <option value="3" selected>3 mm</option>
+                        <option value="4">4 mm</option>
+                        <option value="5">5 mm</option>
+                        <option value="6">6 mm</option>
+                        <option value="8">8 mm</option>
+                        <option value="10">10 mm</option>
+                        <option value="12">12 mm</option>
+                        <option value="15">15 mm</option>
+                        <option value="20">20 mm</option>
+                        <option value="25">25 mm</option>
+                        <option value="30">30 mm</option>
+                    </select>
+                </div>
+                
+                <!-- Info matériau -->
+                <div class="info-box">
+                    <strong>Matériau sélectionné:</strong><br>
+                    <span id="info-nom">HEA etc</span><br>
+                    <strong>Masse volumique:</strong> <span id="info-densite">7.65</span> kg/dm³<br>
+                    <strong>Prix:</strong> <span id="info-prix">2</span> CHF/kg
+                </div>
+                
+                <!-- Découpe -->
+                <div class="form-group">
+                    <label>Prix de coupe (CHF)</label>
+                    <input type="number" id="prix-coupe" value="20" min="0" step="0.01" onchange="calculerTotaux()">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nombre de coupes</label>
+                    <input type="number" id="nb-coupes" value="1" min="0" step="1" onchange="calculerTotaux()">
+                </div>
+                
+                <!-- Coûts additionnels -->
+                <div class="form-group">
+                    <label>Frais divers (CHF)</label>
+                    <input type="number" id="frais-divers" value="0" min="0" step="0.01" onchange="calculerTotaux()">
+                </div>
+                
+                <div class="form-group">
+                    <label>Heures travail</label>
+                    <input type="number" id="heures-travail" value="0" min="0" step="0.5" onchange="calculerTotaux()">
+                </div>
+                
+                <div class="form-group">
+                    <label>Tarif horaire (CHF)</label>
+                    <input type="number" id="tarif-horaire" value="110" min="0" step="1" onchange="calculerTotaux()">
+                </div>
+                
+                <!-- Résultats intermédiaires -->
+                <div class="result-box">
+                    <div class="result-label">Coût découpe</div>
+                    <div class="result-value"><span id="cout-decoupe">20.00</span> CHF</div>
+                </div>
+                
+                <div class="result-box">
+                    <div class="result-label">Coût matière HT</div>
+                    <div class="result-value"><span id="cout-matiere">0.00</span> CHF</div>
+                </div>
+                
+                <div class="result-box">
+                    <div class="result-label">Coût main d'œuvre</div>
+                    <div class="result-value"><span id="cout-mdo">0.00</span> CHF</div>
+                </div>
+            </div>
+            
+            <!-- Tableau des pièces -->
+            <div class="card">
+                <div class="card-title">Liste des pièces</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">#</th>
+                                <th style="width: 100px;">NB Pièces</th>
+                                <th style="width: 120px;">Longueur (mm)</th>
+                                <th style="width: 120px;">Hauteur (mm)</th>
+                                <th style="width: 140px;">Métrage linéaire (mm)</th>
+                                <th style="width: 100px;">Surface (m²)</th>
+                                <th style="width: 100px;">Poids (kg)</th>
+                                <th style="width: 80px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-pieces">
+                            <!-- Les lignes seront ajoutées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Totaux -->
+        <div class="totals-section">
+            <div class="card-title">Récapitulatif financier</div>
+            <div class="totals-grid">
+                <div class="total-card">
+                    <div class="total-label">Surface totale</div>
+                    <div class="total-value"><span id="total-surface">0.00</span> <span class="total-unit">m²</span></div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Poids total</div>
+                    <div class="total-value"><span id="total-poids">0.00</span> <span class="total-unit">kg</span></div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Total matière HT</div>
+                    <div class="total-value"><span id="total-matiere-ht">0.00</span> <span class="total-unit">CHF</span></div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Total HT (avec marge 1.2)</div>
+                    <div class="total-value"><span id="total-ht">0.00</span> <span class="total-unit">CHF</span></div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Total TTC (TVA 7.7%)</div>
+                    <div class="total-value"><span id="total-ttc">0.00</span> <span class="total-unit">CHF</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Plan de découpe -->
+        <div class="plan-decoupe-section">
+            <div class="card-title">Plan de découpe</div>
+            <div class="info-box" style="margin-bottom: 16px;">
+                <strong>Format des plaques :</strong> 1500 × 3000 mm. Le système optimise automatiquement le placement des pièces.
+            </div>
+            <div class="canvas-container">
+                <canvas id="cutting-canvas"></canvas>
+            </div>
+            <div class="legend" id="legend"></div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Plaques de 1500×3000mm</div>
+                    <div class="stat-value" id="nb-plaques">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Taux d'utilisation moyen</div>
+                    <div class="stat-value" id="taux-utilisation">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Surface totale utilisée</div>
+                    <div class="stat-value" id="surface-utilisee">0 m²</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Chutes totales</div>
+                    <div class="stat-value" id="surface-chutes">0 m²</div>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+        <!-- Fin Contenu Calculateur -->
+
+        <!-- Contenu Édition des matériaux -->
+        <div id="tab-materiaux" class="tab-content">
+            <div class="card">
+                <div class="card-title">Édition des matériaux</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">
+                    Modifiez les noms, masses volumiques et prix des matériaux. Les modifications seront sauvegardées automatiquement.
+                </p>
+                
+                <div class="alert-success" id="alert-save">
+                    <strong>✓ Modifications enregistrées avec succès !</strong>
+                </div>
+                
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Nom du matériau</th>
+                            <th style="width: 30%;">Masse volumique (kg/dm³)</th>
+                            <th style="width: 30%;">Prix (CHF/kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-materiaux">
+                        <!-- Les lignes seront ajoutées par JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+                    <div class="card-title">Format des plaques</div>
+                    <p style="color: #6b7280; margin-bottom: 20px;">
+                        Sélectionnez un format standard ou définissez un format personnalisé pour les plaques de tôle.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label>Format de plaque</label>
+                        <select id="format-plaque" onchange="changerFormatPlaque()">
+                            <option value="1000x2000">1000 × 2000 mm</option>
+                            <option value="1250x2500">1250 × 2500 mm</option>
+                            <option value="1500x3000" selected>1500 × 3000 mm (standard)</option>
+                            <option value="personnalise">Format personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <div id="format-personnalise" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                            <div class="form-group">
+                                <label>Largeur (mm)</label>
+                                <input type="number" id="plaque-largeur" value="1500" min="100" step="1" onchange="appliquerFormatPersonnalise()">
+                            </div>
+                            <div class="form-group">
+                                <label>Longueur (mm)</label>
+                                <input type="number" id="plaque-longueur" value="3000" min="100" step="1" onchange="appliquerFormatPersonnalise()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box" style="margin-top: 16px;">
+                        <strong>Format actuel :</strong> <span id="format-actuel">1500 × 3000 mm</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <button class="btn-save" onclick="sauvegarderMateriaux()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        Enregistrer les modifications
+                    </button>
+                    <button class="btn-reset" onclick="reinitialiserMateriaux()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"></polyline>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                        </svg>
+                        Réinitialiser par défaut
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Fin Contenu Édition -->
+    </div>
+
+    <script>
+        let ligneCount = 0;
+        let materiauActuel = {
+            nom: 'HEA etc',
+            densite: 7.65,
+            prixKg: 2
+        };
+        
+        // Matériaux par défaut
+        const MATERIAUX_DEFAUT = [
+            { id: 'hea', nom: 'HEA etc', densite: 7.65, prix: 2 },
+            { id: 'inoxbrosse', nom: 'Inox Brossé', densite: 7.65, prix: 4.5 },
+            { id: 'acier', nom: 'tôle brut acier', densite: 7.65, prix: 2 },
+            { id: 'zincor', nom: 'Tole zincor', densite: 7.65, prix: 2 },
+            { id: 'inox', nom: 'Inox', densite: 7.9, prix: 4.5 },
+            { id: 'spoinox', nom: 'SPO inox', densite: 7.65, prix: 4.5 },
+            { id: 'alubrut', nom: 'Alu brut', densite: 2.7, prix: 6.6 },
+            { id: 'alueloxe', nom: 'alu eloxé', densite: 2.7, prix: 6 },
+            { id: 'cuivre', nom: 'Cuivre', densite: 8.96, prix: 30 },
+            { id: 'verre', nom: 'verre', densite: 2.5, prix: 0 }
+        ];
+        
+        // Dimensions de la plaque de base en mm (modifiables)
+        let PLAQUE_LARGEUR = 1500;
+        let PLAQUE_LONGUEUR = 3000;
+        
+        // Couleurs pour les pièces
+        const COLORS = [
+            '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+            '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+            '#ec4899', '#f43f5e'
+        ];
+        
+        // Charger les données sauvegardées
+        window.addEventListener('DOMContentLoaded', function() {
+            chargerMateriaux();
+            chargerFormatPlaque();
+            chargerDonnees();
+            if (document.getElementById('tbody-pieces').rows.length === 0) {
+                ajouterLigne(); // Ajouter une ligne par défaut
+            }
+            calculerTotaux();
+            dessinerPlanDecoupe();
+            initialiserTableauMateriaux();
+        });
+        
+        // Charger le format de plaque depuis localStorage
+        function chargerFormatPlaque() {
+            const saved = localStorage.getItem('formatPlaque');
+            if (saved) {
+                const format = JSON.parse(saved);
+                PLAQUE_LARGEUR = format.largeur;
+                PLAQUE_LONGUEUR = format.longueur;
+                
+                const select = document.getElementById('format-plaque');
+                if (format.type === 'personnalise') {
+                    select.value = 'personnalise';
+                    document.getElementById('format-personnalise').style.display = 'block';
+                    document.getElementById('plaque-largeur').value = format.largeur;
+                    document.getElementById('plaque-longueur').value = format.longueur;
+                } else {
+                    select.value = format.type;
+                }
+                
+                mettreAJourAffichageFormat();
+            }
+        }
+        
+        // Sauvegarder le format de plaque dans localStorage
+        function sauvegarderFormatPlaque(type, largeur, longueur) {
+            const format = {
+                type: type,
+                largeur: largeur,
+                longueur: longueur
+            };
+            localStorage.setItem('formatPlaque', JSON.stringify(format));
+        }
+        
+        // Changer le format de plaque
+        function changerFormatPlaque() {
+            const select = document.getElementById('format-plaque');
+            const valeur = select.value;
+            
+            if (valeur === 'personnalise') {
+                document.getElementById('format-personnalise').style.display = 'block';
+                PLAQUE_LARGEUR = parseInt(document.getElementById('plaque-largeur').value);
+                PLAQUE_LONGUEUR = parseInt(document.getElementById('plaque-longueur').value);
+                sauvegarderFormatPlaque('personnalise', PLAQUE_LARGEUR, PLAQUE_LONGUEUR);
+            } else {
+                document.getElementById('format-personnalise').style.display = 'none';
+                const [largeur, longueur] = valeur.split('x').map(Number);
+                PLAQUE_LARGEUR = largeur;
+                PLAQUE_LONGUEUR = longueur;
+                
+                // Mettre à jour les champs personnalisés
+                document.getElementById('plaque-largeur').value = largeur;
+                document.getElementById('plaque-longueur').value = longueur;
+                
+                sauvegarderFormatPlaque(valeur, largeur, longueur);
+            }
+            
+            mettreAJourAffichageFormat();
+            dessinerPlanDecoupe();
+        }
+        
+        // Appliquer le format personnalisé
+        function appliquerFormatPersonnalise() {
+            PLAQUE_LARGEUR = parseInt(document.getElementById('plaque-largeur').value);
+            PLAQUE_LONGUEUR = parseInt(document.getElementById('plaque-longueur').value);
+            
+            sauvegarderFormatPlaque('personnalise', PLAQUE_LARGEUR, PLAQUE_LONGUEUR);
+            mettreAJourAffichageFormat();
+            dessinerPlanDecoupe();
+        }
+        
+        // Mettre à jour l'affichage du format actuel
+        function mettreAJourAffichageFormat() {
+            document.getElementById('format-actuel').textContent = `${PLAQUE_LARGEUR} × ${PLAQUE_LONGUEUR} mm`;
+            
+            // Mettre à jour aussi dans le plan de découpe
+            const infoBox = document.querySelector('.plan-decoupe-section .info-box');
+            if (infoBox) {
+                infoBox.innerHTML = `<strong>Format des plaques :</strong> ${PLAQUE_LARGEUR} × ${PLAQUE_LONGUEUR} mm. Le système optimise automatiquement le placement des pièces.`;
+            }
+            
+            // Mettre à jour les statistiques
+            const statLabel = document.querySelector('.stat-box .stat-label');
+            if (statLabel) {
+                statLabel.textContent = `Plaques de ${PLAQUE_LARGEUR}×${PLAQUE_LONGUEUR}mm`;
+            }
+        }
+        
+        // Changer d'onglet
+        function changerOnglet(onglet) {
+            // Masquer tous les contenus
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Désactiver tous les onglets
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            document.getElementById('tab-' + onglet).classList.add('active');
+            event.target.closest('.tab').classList.add('active');
+        }
+        
+        // Charger les matériaux depuis localStorage ou utiliser les valeurs par défaut
+        function chargerMateriaux() {
+            const saved = localStorage.getItem('materiauxPersonnalises');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return MATERIAUX_DEFAUT;
+        }
+        
+        // Sauvegarder les matériaux dans localStorage
+        function sauvegarderMateriaux() {
+            const tbody = document.getElementById('tbody-materiaux');
+            const materiaux = [];
+            
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const id = row.dataset.id;
+                const nom = row.cells[0].querySelector('input').value.trim();
+                const densite = parseFloat(row.cells[1].querySelector('input').value);
+                const prix = parseFloat(row.cells[2].querySelector('input').value);
+                
+                if (nom && densite > 0) {
+                    materiaux.push({ id, nom, densite, prix });
+                }
+            }
+            
+            localStorage.setItem('materiauxPersonnalises', JSON.stringify(materiaux));
+            
+            // Mettre à jour le sélecteur de matériaux
+            mettreAJourSelecteurMateriaux();
+            
+            // Afficher le message de confirmation
+            const alert = document.getElementById('alert-save');
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Réinitialiser les matériaux aux valeurs par défaut
+        function reinitialiserMateriaux() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser tous les matériaux aux valeurs par défaut ?')) {
+                localStorage.removeItem('materiauxPersonnalises');
+                initialiserTableauMateriaux();
+                mettreAJourSelecteurMateriaux();
+                
+                const alert = document.getElementById('alert-save');
+                alert.innerHTML = '<strong>✓ Matériaux réinitialisés aux valeurs par défaut !</strong>';
+                alert.style.display = 'block';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                    alert.innerHTML = '<strong>✓ Modifications enregistrées avec succès !</strong>';
+                }, 3000);
+            }
+        }
+        
+        // Initialiser le tableau d'édition des matériaux
+        function initialiserTableauMateriaux() {
+            const tbody = document.getElementById('tbody-materiaux');
+            tbody.innerHTML = '';
+            
+            const materiaux = chargerMateriaux();
+            
+            materiaux.forEach(mat => {
+                const row = tbody.insertRow();
+                row.dataset.id = mat.id;
+                
+                row.innerHTML = `
+                    <td><input type="text" value="${mat.nom}" class="table-input"></td>
+                    <td><input type="number" value="${mat.densite}" min="0" step="0.01" class="table-input"></td>
+                    <td><input type="number" value="${mat.prix}" min="0" step="0.01" class="table-input"></td>
+                `;
+            });
+        }
+        
+        // Mettre à jour le sélecteur de matériaux dans le calculateur
+        function mettreAJourSelecteurMateriaux() {
+            const select = document.getElementById('materiau');
+            const valeurActuelle = select.value;
+            
+            const materiaux = chargerMateriaux();
+            
+            select.innerHTML = '';
+            materiaux.forEach(mat => {
+                const option = document.createElement('option');
+                option.value = `${mat.nom}|${mat.densite}|${mat.prix}`;
+                option.textContent = `${mat.nom} (${mat.densite} kg/dm³, ${mat.prix} CHF/kg)`;
+                select.appendChild(option);
+            });
+            
+            // Essayer de restaurer la valeur précédente
+            if (valeurActuelle) {
+                const [nomActuel] = valeurActuelle.split('|');
+                const optionTrouvee = Array.from(select.options).find(opt => opt.value.startsWith(nomActuel + '|'));
+                if (optionTrouvee) {
+                    select.value = optionTrouvee.value;
+                }
+            }
+            
+            mettreAJourMateriau();
+        }
+        
+        // Charger les données sauvegardées
+        
+        // Mettre à jour le matériau sélectionné
+        function mettreAJourMateriau() {
+            const select = document.getElementById('materiau');
+            const [nom, densite, prix] = select.value.split('|');
+            
+            materiauActuel = {
+                nom: nom,
+                densite: parseFloat(densite),
+                prixKg: parseFloat(prix)
+            };
+            
+            document.getElementById('info-nom').textContent = nom;
+            document.getElementById('info-densite').textContent = densite;
+            document.getElementById('info-prix').textContent = prix;
+            
+            // Recalculer toutes les lignes avec le nouveau matériau
+            const tbody = document.getElementById('tbody-pieces');
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const firstInput = row.cells[1].querySelector('input');
+                calculerLigne(firstInput);
+            }
+            
+            calculerTotaux();
+        }
+        
+        // Mettre à jour l'épaisseur et recalculer toutes les lignes
+        function mettreAJourEpaisseur() {
+            const tbody = document.getElementById('tbody-pieces');
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const firstInput = row.cells[1].querySelector('input');
+                calculerLigne(firstInput);
+            }
+            
+            calculerTotaux();
+        }
+        
+        // Ajouter une nouvelle ligne
+        function ajouterLigne() {
+            ligneCount++;
+            const tbody = document.getElementById('tbody-pieces');
+            const row = tbody.insertRow();
+            row.id = 'ligne-' + ligneCount;
+            
+            row.innerHTML = `
+                <td style="font-weight: bold; color: #6366f1;">${ligneCount}</td>
+                <td><input type="number" class="table-input" value="1" min="1" onchange="calculerLigne(this); sauvegarderDonnees(); dessinerPlanDecoupe()"></td>
+                <td><input type="number" class="table-input" value="0" min="0" step="0.1" onchange="calculerLigne(this); sauvegarderDonnees(); dessinerPlanDecoupe()"></td>
+                <td><input type="number" class="table-input" value="0" min="0" step="0.1" onchange="calculerLigne(this); sauvegarderDonnees(); dessinerPlanDecoupe()"></td>
+                <td><input type="text" class="table-input" readonly style="background: #f3f4f6;"></td>
+                <td><input type="text" class="table-input" readonly style="background: #f3f4f6;"></td>
+                <td><input type="text" class="table-input" readonly style="background: #f3f4f6;"></td>
+                <td>
+                    <button class="btn btn-danger btn-small" onclick="supprimerLigne('${row.id}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            
+            calculerTotaux();
+            dessinerPlanDecoupe();
+        }
+        
+        // Calculer les valeurs d'une ligne
+        function calculerLigne(input) {
+            const row = input.closest('tr');
+            const nbPieces = parseFloat(row.cells[1].querySelector('input').value) || 0;
+            const longueur = parseFloat(row.cells[2].querySelector('input').value) || 0;
+            const hauteur = parseFloat(row.cells[3].querySelector('input').value) || 0;
+            const epaisseur = parseFloat(document.getElementById('epaisseur').value) || 0;
+            
+            // Métrage linéaire = (L + H) * 2 * NB pièces
+            const metrageLineaire = (longueur + hauteur) * 2 * nbPieces;
+            
+            // Surface = L * H * NB pièces / 1000000 (conversion mm² en m²)
+            const surface = (longueur * hauteur * nbPieces) / 1000000;
+            
+            // Poids = Surface (m²) × Épaisseur (mm) × Densité (g/cm³)
+            const poids = surface * epaisseur * materiauActuel.densite;
+            
+            row.cells[4].querySelector('input').value = metrageLineaire.toFixed(2);
+            row.cells[5].querySelector('input').value = surface.toFixed(4);
+            row.cells[6].querySelector('input').value = poids.toFixed(3);
+            
+            calculerTotaux();
+        }
+        
+        // Calculer tous les totaux
+        function calculerTotaux() {
+            const tbody = document.getElementById('tbody-pieces');
+            let totalSurface = 0;
+            let totalPoids = 0;
+            
+            // Parcourir toutes les lignes
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const surface = parseFloat(row.cells[5].querySelector('input').value) || 0;
+                const poids = parseFloat(row.cells[6].querySelector('input').value) || 0;
+                
+                totalSurface += surface;
+                totalPoids += poids;
+            }
+            
+            // Coûts
+            const prixCoupe = parseFloat(document.getElementById('prix-coupe').value) || 0;
+            const nbCoupes = parseFloat(document.getElementById('nb-coupes').value) || 0;
+            const coutDecoupe = prixCoupe * nbCoupes;
+            
+            const coutMatiere = (materiauActuel.prixKg * totalPoids) + coutDecoupe;
+            
+            const heures = parseFloat(document.getElementById('heures-travail').value) || 0;
+            const tarif = parseFloat(document.getElementById('tarif-horaire').value) || 0;
+            const coutMdo = heures * tarif;
+            
+            const fraisDivers = parseFloat(document.getElementById('frais-divers').value) || 0;
+            
+            // Total matière HT = coût matière
+            const totalMatiereHT = coutMatiere;
+            
+            // Total HT = (matière * 1.2) + main d'oeuvre + frais divers
+            const totalHT = (totalMatiereHT * 1.2) + coutMdo + fraisDivers;
+            
+            // Total TTC = Total HT * 1.077 (TVA 7.7%)
+            const totalTTC = totalHT * 1.077;
+            
+            // Afficher les résultats
+            document.getElementById('total-surface').textContent = totalSurface.toFixed(4);
+            document.getElementById('total-poids').textContent = totalPoids.toFixed(3);
+            document.getElementById('cout-decoupe').textContent = coutDecoupe.toFixed(2);
+            document.getElementById('cout-matiere').textContent = coutMatiere.toFixed(2);
+            document.getElementById('cout-mdo').textContent = coutMdo.toFixed(2);
+            document.getElementById('total-matiere-ht').textContent = totalMatiereHT.toFixed(2);
+            document.getElementById('total-ht').textContent = totalHT.toFixed(2);
+            document.getElementById('total-ttc').textContent = totalTTC.toFixed(2);
+        }
+        
+        // Supprimer une ligne
+        function supprimerLigne(rowId) {
+            if (confirm('Supprimer cette pièce ?')) {
+                document.getElementById(rowId).remove();
+                renumeroterLignes();
+                calculerTotaux();
+                sauvegarderDonnees();
+                dessinerPlanDecoupe();
+            }
+        }
+        
+        // Renommer les positions
+        function renumeroterLignes() {
+            const tbody = document.getElementById('tbody-pieces');
+            for (let i = 0; i < tbody.rows.length; i++) {
+                tbody.rows[i].cells[0].textContent = i + 1;
+            }
+            ligneCount = tbody.rows.length;
+        }
+        
+        // Effacer tout
+        function effacerTout() {
+            if (confirm('Réinitialiser toutes les données ?')) {
+                document.getElementById('tbody-pieces').innerHTML = '';
+                ligneCount = 0;
+                ajouterLigne();
+                localStorage.removeItem('calculateurTolerie');
+                calculerTotaux();
+                dessinerPlanDecoupe();
+            }
+        }
+        
+        // Dessiner le plan de découpe
+        function dessinerPlanDecoupe() {
+            const tbody = document.getElementById('tbody-pieces');
+            
+            // Préparer toutes les pièces avec leurs quantités
+            const toutesLesPieces = [];
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const nbPieces = parseInt(row.cells[1].querySelector('input').value) || 0;
+                const longueur = parseFloat(row.cells[2].querySelector('input').value) || 0;
+                const largeur = parseFloat(row.cells[3].querySelector('input').value) || 0;
+                
+                if (longueur > 0 && largeur > 0) {
+                    for (let j = 0; j < nbPieces; j++) {
+                        toutesLesPieces.push({
+                            id: i + 1,
+                            longueur: longueur,
+                            largeur: largeur,
+                            couleur: COLORS[i % COLORS.length]
+                        });
+                    }
+                }
+            }
+            
+            if (toutesLesPieces.length === 0) {
+                const canvas = document.getElementById('cutting-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 400;
+                canvas.height = 100;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Ajoutez des pièces pour voir le plan de découpe', canvas.width / 2, canvas.height / 2);
+                
+                document.getElementById('nb-plaques').textContent = '0';
+                document.getElementById('taux-utilisation').textContent = '0%';
+                document.getElementById('surface-utilisee').textContent = '0 m²';
+                document.getElementById('surface-chutes').textContent = '0 m²';
+                document.getElementById('legend').innerHTML = '';
+                return;
+            }
+            
+            // Algorithme de découpe optimisé
+            const plaques = [];
+            const piecesAplacer = [...toutesLesPieces];
+            
+            // Trier par surface décroissante
+            piecesAplacer.sort((a, b) => {
+                const surfaceA = a.longueur * a.largeur;
+                const surfaceB = b.longueur * b.largeur;
+                return surfaceB - surfaceA;
+            });
+            
+            while (piecesAplacer.length > 0) {
+                const plaque = {
+                    pieces: [],
+                    espacesLibres: [{
+                        x: 0,
+                        y: 0,
+                        largeur: PLAQUE_LARGEUR,
+                        longueur: PLAQUE_LONGUEUR
+                    }]
+                };
+                
+                let continuerPlacement = true;
+                
+                while (continuerPlacement && piecesAplacer.length > 0) {
+                    continuerPlacement = false;
+                    
+                    for (let i = 0; i < piecesAplacer.length; i++) {
+                        const piece = piecesAplacer[i];
+                        
+                        // Essayer les deux orientations
+                        const orientations = [
+                            { w: piece.longueur, h: piece.largeur, rotated: false },
+                            { w: piece.largeur, h: piece.longueur, rotated: true }
+                        ];
+                        
+                        let meilleurPlacement = null;
+                        let meilleurEspaceIndex = -1;
+                        
+                        for (let espaceIndex = 0; espaceIndex < plaque.espacesLibres.length; espaceIndex++) {
+                            const espace = plaque.espacesLibres[espaceIndex];
+                            
+                            for (const orientation of orientations) {
+                                if (orientation.w <= espace.largeur && orientation.h <= espace.longueur) {
+                                    const wasteLargeur = espace.largeur - orientation.w;
+                                    const wasteLongueur = espace.longueur - orientation.h;
+                                    const score = wasteLargeur + wasteLongueur;
+                                    
+                                    if (meilleurPlacement === null || score < meilleurPlacement.score) {
+                                        meilleurPlacement = {
+                                            x: espace.x,
+                                            y: espace.y,
+                                            w: orientation.w,
+                                            h: orientation.h,
+                                            rotated: orientation.rotated,
+                                            score: score
+                                        };
+                                        meilleurEspaceIndex = espaceIndex;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (meilleurPlacement !== null) {
+                            piece.x = meilleurPlacement.x;
+                            piece.y = meilleurPlacement.y;
+                            piece.w = meilleurPlacement.w;
+                            piece.h = meilleurPlacement.h;
+                            piece.rotated = meilleurPlacement.rotated;
+                            
+                            plaque.pieces.push(piece);
+                            
+                            const espaceUtilise = plaque.espacesLibres[meilleurEspaceIndex];
+                            plaque.espacesLibres.splice(meilleurEspaceIndex, 1);
+                            
+                            // Espace à droite
+                            if (espaceUtilise.largeur > meilleurPlacement.w) {
+                                plaque.espacesLibres.push({
+                                    x: espaceUtilise.x + meilleurPlacement.w,
+                                    y: espaceUtilise.y,
+                                    largeur: espaceUtilise.largeur - meilleurPlacement.w,
+                                    longueur: meilleurPlacement.h
+                                });
+                            }
+                            
+                            // Espace en bas
+                            if (espaceUtilise.longueur > meilleurPlacement.h) {
+                                plaque.espacesLibres.push({
+                                    x: espaceUtilise.x,
+                                    y: espaceUtilise.y + meilleurPlacement.h,
+                                    largeur: espaceUtilise.largeur,
+                                    longueur: espaceUtilise.longueur - meilleurPlacement.h
+                                });
+                            }
+                            
+                            plaque.espacesLibres.sort((a, b) => {
+                                return (b.largeur * b.longueur) - (a.largeur * a.longueur);
+                            });
+                            
+                            piecesAplacer.splice(i, 1);
+                            continuerPlacement = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (plaque.pieces.length > 0) {
+                    plaques.push(plaque);
+                }
+                
+                if (piecesAplacer.length > 0 && plaque.pieces.length === 0) {
+                    break;
+                }
+            }
+            
+            // Dessiner sur le canvas - disposition 2x2 (4 plaques par page)
+            const canvas = document.getElementById('cutting-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Échelle réduite pour 4 plaques
+            const scale = 0.08; // Réduit de 0.12 à 0.08 pour tenir 4 plaques
+            const margin = 10;
+            const espacementHorizontal = 15;
+            const espacementVertical = 15;
+            
+            // Calculer les dimensions pour une grille 2x2
+            const largeurPlaque = PLAQUE_LARGEUR * scale;
+            const hauteurPlaque = PLAQUE_LONGUEUR * scale;
+            
+            const colonnes = 2;
+            const lignes = Math.ceil(plaques.length / colonnes);
+            
+            canvas.width = (colonnes * largeurPlaque) + ((colonnes + 1) * margin) + ((colonnes - 1) * espacementHorizontal);
+            canvas.height = (lignes * hauteurPlaque) + ((lignes + 1) * margin) + ((lignes - 1) * espacementVertical);
+            
+            let surfaceTotaleUtilisee = 0;
+            let surfaceTotalePlaques = 0;
+            
+            plaques.forEach((plaque, indexPlaque) => {
+                // Position dans la grille 2x2
+                const colonne = indexPlaque % colonnes;
+                const ligne = Math.floor(indexPlaque / colonnes);
+                
+                const offsetX = margin + (colonne * (largeurPlaque + margin + espacementHorizontal));
+                const offsetY = margin + (ligne * (hauteurPlaque + margin + espacementVertical));
+                
+                // Dessiner le contour de la plaque
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(offsetX, offsetY, largeurPlaque, hauteurPlaque);
+                
+                const surfacePlaque = (PLAQUE_LARGEUR * PLAQUE_LONGUEUR) / 1000000;
+                const surfaceUtiliseePlaque = plaque.pieces.reduce((sum, p) => 
+                    sum + (p.w * p.h) / 1000000, 0
+                );
+                const tauxPlaque = (surfaceUtiliseePlaque / surfacePlaque * 100).toFixed(1);
+                
+                surfaceTotaleUtilisee += surfaceUtiliseePlaque;
+                surfaceTotalePlaques += surfacePlaque;
+                
+                // Titre de la plaque au-dessus
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 9px Courier New';
+                ctx.textAlign = 'left';
+                ctx.fillText(`P${indexPlaque + 1} (${plaque.pieces.length}pcs - ${tauxPlaque}%)`, offsetX, offsetY - 3);
+                
+                // Dessiner chaque pièce
+                plaque.pieces.forEach(piece => {
+                    ctx.fillStyle = piece.couleur;
+                    ctx.fillRect(
+                        offsetX + piece.x * scale,
+                        offsetY + piece.y * scale,
+                        piece.w * scale,
+                        piece.h * scale
+                    );
+                    
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(
+                        offsetX + piece.x * scale,
+                        offsetY + piece.y * scale,
+                        piece.w * scale,
+                        piece.h * scale
+                    );
+                    
+                    // Numéro de pièce (seulement si assez grand)
+                    if (piece.w * scale > 15 && piece.h * scale > 15) {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 8px Courier New';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const texte = piece.rotated ? `${piece.id}↻` : `${piece.id}`;
+                        ctx.fillText(
+                            texte,
+                            offsetX + piece.x * scale + piece.w * scale / 2,
+                            offsetY + piece.y * scale + piece.h * scale / 2
+                        );
+                    }
+                });
+            });
+            
+            // Statistiques
+            const tauxMoyen = surfaceTotalePlaques > 0 ? (surfaceTotaleUtilisee / surfaceTotalePlaques * 100).toFixed(1) : 0;
+            const surfaceChutes = surfaceTotalePlaques - surfaceTotaleUtilisee;
+            
+            document.getElementById('nb-plaques').textContent = plaques.length;
+            document.getElementById('taux-utilisation').textContent = tauxMoyen + '%';
+            document.getElementById('surface-utilisee').textContent = surfaceTotaleUtilisee.toFixed(2) + ' m²';
+            document.getElementById('surface-chutes').textContent = surfaceChutes.toFixed(2) + ' m²';
+            
+            // Légende
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+            const piecesUniques = {};
+            toutesLesPieces.forEach(p => {
+                if (!piecesUniques[p.id]) {
+                    piecesUniques[p.id] = { couleur: p.couleur, longueur: p.longueur, largeur: p.largeur };
+                }
+            });
+            
+            Object.keys(piecesUniques).forEach(id => {
+                const piece = piecesUniques[id];
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-color" style="background: ${piece.couleur}"></div>
+                    <div class="legend-text">Pièce ${id}: ${piece.longueur}×${piece.largeur}mm</div>
+                `;
+                legend.appendChild(item);
+            });
+        }
+        
+        // Sauvegarder dans localStorage
+        function sauvegarderDonnees() {
+            const tbody = document.getElementById('tbody-pieces');
+            const donnees = {
+                materiau: document.getElementById('materiau').value,
+                epaisseur: document.getElementById('epaisseur').value,
+                prixCoupe: document.getElementById('prix-coupe').value,
+                nbCoupes: document.getElementById('nb-coupes').value,
+                fraisDivers: document.getElementById('frais-divers').value,
+                heuresTravail: document.getElementById('heures-travail').value,
+                tarifHoraire: document.getElementById('tarif-horaire').value,
+                pieces: []
+            };
+            
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                donnees.pieces.push({
+                    nbPieces: row.cells[1].querySelector('input').value,
+                    longueur: row.cells[2].querySelector('input').value,
+                    hauteur: row.cells[3].querySelector('input').value
+                });
+            }
+            
+            localStorage.setItem('calculateurTolerie', JSON.stringify(donnees));
+        }
+        
+        // Charger depuis localStorage
+        function chargerDonnees() {
+            const donnees = localStorage.getItem('calculateurTolerie');
+            if (donnees) {
+                const parsed = JSON.parse(donnees);
+                
+                document.getElementById('materiau').value = parsed.materiau || 'HEA etc|7.65|2';
+                document.getElementById('epaisseur').value = parsed.epaisseur || 3;
+                document.getElementById('prix-coupe').value = parsed.prixCoupe || 20;
+                document.getElementById('nb-coupes').value = parsed.nbCoupes || 1;
+                document.getElementById('frais-divers').value = parsed.fraisDivers || 0;
+                document.getElementById('heures-travail').value = parsed.heuresTravail || 0;
+                document.getElementById('tarif-horaire').value = parsed.tarifHoraire || 110;
+                
+                mettreAJourMateriau();
+                
+                if (parsed.pieces && parsed.pieces.length > 0) {
+                    parsed.pieces.forEach(piece => {
+                        ajouterLigne();
+                        const tbody = document.getElementById('tbody-pieces');
+                        const row = tbody.rows[tbody.rows.length - 1];
+                        
+                        row.cells[1].querySelector('input').value = piece.nbPieces || 1;
+                        row.cells[2].querySelector('input').value = piece.longueur || 0;
+                        row.cells[3].querySelector('input').value = piece.hauteur || 0;
+                        
+                        calculerLigne(row.cells[1].querySelector('input'));
+                    });
+                }
+            }
+        }
+        
+        // Sauvegarder automatiquement toutes les 30 secondes
+        setInterval(function() {
+            const tbody = document.getElementById('tbody-pieces');
+            if (tbody.rows.length > 0) {
+                sauvegarderDonnees();
+            }
+        }, 30000);
+    </script>
+
+    <footer style="text-align:center; font-size:14px; color:#6b7280; margin-top:30px; padding: 20px;">
+        Créé par Dominique Rossier
+    </footer>
+</body>
+</html>

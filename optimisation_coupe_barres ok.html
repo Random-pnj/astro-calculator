@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimisation de Coupe de Barres</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .pieces-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .piece-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .piece-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .piece-info {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            background: #dc3545;
+        }
+
+        .btn-add {
+            width: 100%;
+            background: #28a745;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-label {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .result-value {
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .barre-plan {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .barre-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .barre-title {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .barre-chute {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .barre-visual {
+            height: 60px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .piece-visual {
+            position: absolute;
+            height: 100%;
+            background: #667eea;
+            border-right: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .chute-visual {
+            position: absolute;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                #dc3545,
+                #dc3545 10px,
+                #c82333 10px,
+                #c82333 20px
+            );
+            opacity: 0.7;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success::before {
+            content: "✓";
+            font-size: 1.5em;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 25px;
+            }
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .btn-print {
+            background: #17a2b8;
+            margin-top: 10px;
+        }
+
+        /* Styles pour l'impression */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                font-family: 'Courier New', monospace;
+                font-size: 12pt;
+                line-height: 1.3;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            /* Cacher les éléments non nécessaires à l'impression */
+            .subtitle,
+            .input-group,
+            .pieces-list,
+            .btn,
+            .btn-print,
+            .barre-visual,
+            .success {
+                display: none !important;
+            }
+
+            h1 {
+                font-size: 14pt;
+                font-weight: bold;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #000;
+                padding-bottom: 3px;
+                text-align: center;
+            }
+
+            h2, h3 {
+                font-size: 12pt;
+                font-weight: bold;
+                margin-top: 10px;
+                margin-bottom: 5px;
+                text-decoration: underline;
+            }
+
+            .results {
+                display: block !important;
+                background: white;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .result-item {
+                border: none;
+                margin: 0;
+                padding: 2px 0;
+                page-break-inside: avoid;
+                display: block;
+            }
+
+            .result-item .result-label {
+                display: inline;
+                font-size: 12pt;
+                font-weight: normal;
+            }
+
+            .result-item .result-value {
+                display: inline;
+                font-size: 12pt;
+                color: #000;
+                font-weight: bold;
+            }
+
+            /* Format compact pour la liste des pièces */
+            #listePiecesImpression {
+                display: block !important;
+                margin: 10px 0;
+                page-break-inside: avoid;
+            }
+
+            #listePiecesDetail {
+                border: none;
+                padding: 0;
+                margin: 5px 0;
+            }
+
+            .piece-print-item {
+                padding: 1px 0;
+                border: none;
+                display: block;
+                page-break-inside: avoid;
+            }
+
+            /* Format ultra-compact pour les barres */
+            .barre-plan {
+                border: none;
+                margin: 0;
+                padding: 3px 0;
+                page-break-inside: avoid;
+            }
+
+            .barre-header {
+                border: none;
+                margin: 0;
+                padding: 0;
+                display: block;
+            }
+
+            .barre-header .barre-title {
+                font-size: 12pt;
+                font-weight: bold;
+                display: inline;
+            }
+
+            .barre-header .barre-chute {
+                color: #000;
+                font-size: 12pt;
+                font-weight: normal;
+                display: inline;
+            }
+
+            .barre-plan > div:nth-child(2) {
+                margin: 0;
+                padding: 0;
+                font-size: 12pt;
+            }
+
+            #barresPlans {
+                margin-top: 10px;
+            }
+
+            #barresPlans h3 {
+                margin-top: 10px;
+                margin-bottom: 5px;
+                text-decoration: underline;
+            }
+
+            /* Séparateurs de lignes style machine à écrire */
+            .barre-plan::after {
+                content: "";
+                display: block;
+                border-bottom: 1px dashed #ccc;
+                margin: 3px 0;
+            }
+
+            /* Pagination optimisée */
+            @page {
+                margin: 1.5cm 1cm;
+                size: A4 portrait;
+            }
+
+            /* Forcer le retour à la ligne si nécessaire */
+            * {
+                word-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✂️ Optimisation de Coupe de Barres</h1>
+        <p class="subtitle">Minimisation des chutes avec algorithme d'optimisation</p>
+
+        <div class="input-group">
+            <label for="longueurBarre">Longueur de barre disponible (mm)</label>
+            <input type="number" id="longueurBarre" value="6000" min="1" step="1">
+        </div>
+
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="margeTotal">Marge totale à retirer (mm)</label>
+                <input type="number" id="margeTotal" value="120" min="0" step="1">
+            </div>
+
+            <div class="input-group">
+                <label for="perteCoupe">Perte par coupe (mm)</label>
+                <input type="number" id="perteCoupe" value="5" min="0" step="0.1">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Ajouter des pièces à découper</label>
+            <div class="grid-2">
+                <input type="number" id="longueurPiece" placeholder="Longueur (mm)" min="1" step="0.1">
+                <input type="number" id="quantitePiece" placeholder="Quantité" min="1" step="1" value="1">
+            </div>
+            <button class="btn btn-add" onclick="ajouterPiece()">➕ Ajouter la pièce</button>
+        </div>
+
+        <div class="pieces-list" id="piecesList">
+            <div class="empty-message">Aucune pièce ajoutée. Ajoutez des pièces ci-dessus.</div>
+        </div>
+
+        <button class="btn" onclick="optimiserCoupes()">🔧 Optimiser les coupes</button>
+
+        <button class="btn btn-print" id="btnPrint" onclick="imprimerPlan()" style="display: none;">🖨️ Imprimer le plan de coupe</button>
+
+        <div id="results" class="results">
+            <h2 style="color: #333; margin-bottom: 20px;">📊 Plan de coupe optimisé</h2>
+            
+            <!-- Section liste des pièces pour l'impression -->
+            <div id="listePiecesImpression" style="display: none;">
+                <h3 style="color: #333; margin-top: 20px; margin-bottom: 10px;">Liste des pièces à découper :</h3>
+                <div id="listePiecesDetail"></div>
+            </div>
+            
+            <div class="result-item">
+                <span class="result-label">Longueur utilisable par barre :</span>
+                <span class="result-value" id="longueurUtilisable">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Nombre de barres nécessaires :</span>
+                <span class="result-value" id="nombreBarres">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Pertes totales de coupe :</span>
+                <span class="result-value" id="pertesTotales">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Chute totale :</span>
+                <span class="result-value" id="chuteTotal">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Taux d'utilisation :</span>
+                <span class="result-value" id="tauxUtilisation">-</span>
+            </div>
+
+            <div id="statusMessage"></div>
+
+            <div id="barresPlans" style="margin-top: 20px;">
+                <!-- Les plans de coupe seront générés ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pieces = [];
+
+        function ajouterPiece() {
+            const longueur = parseFloat(document.getElementById('longueurPiece').value);
+            const quantite = parseInt(document.getElementById('quantitePiece').value);
+
+            if (isNaN(longueur) || isNaN(quantite) || longueur <= 0 || quantite <= 0) {
+                alert('Veuillez entrer une longueur et une quantité valides.');
+                return;
+            }
+
+            pieces.push({ longueur: longueur, quantite: quantite });
+            
+            // Réinitialiser les champs
+            document.getElementById('longueurPiece').value = '';
+            document.getElementById('quantitePiece').value = '1';
+            
+            afficherPieces();
+        }
+
+        function supprimerPiece(index) {
+            pieces.splice(index, 1);
+            afficherPieces();
+        }
+
+        function afficherPieces() {
+            const liste = document.getElementById('piecesList');
+            
+            if (pieces.length === 0) {
+                liste.innerHTML = '<div class="empty-message">Aucune pièce ajoutée. Ajoutez des pièces ci-dessus.</div>';
+                return;
+            }
+
+            liste.innerHTML = '';
+            pieces.forEach((piece, index) => {
+                const div = document.createElement('div');
+                div.className = 'piece-item';
+                div.innerHTML = `
+                    <div class="piece-info">
+                        <strong>${piece.longueur} mm</strong> × ${piece.quantite} pièce(s)
+                    </div>
+                    <button class="btn btn-small" onclick="supprimerPiece(${index})">🗑️</button>
+                `;
+                liste.appendChild(div);
+            });
+        }
+
+        function optimiserCoupes() {
+            if (pieces.length === 0) {
+                alert('Veuillez ajouter au moins une pièce à découper.');
+                return;
+            }
+
+            const longueurBarre = parseFloat(document.getElementById('longueurBarre').value);
+            const margeTotal = parseFloat(document.getElementById('margeTotal').value);
+            const perteCoupe = parseFloat(document.getElementById('perteCoupe').value);
+
+            if (isNaN(longueurBarre) || longueurBarre <= 0) {
+                alert('Veuillez entrer une longueur de barre valide.');
+                return;
+            }
+
+            if (isNaN(margeTotal) || margeTotal < 0) {
+                alert('Veuillez entrer une marge valide.');
+                return;
+            }
+
+            if (isNaN(perteCoupe) || perteCoupe < 0) {
+                alert('Veuillez entrer une perte par coupe valide.');
+                return;
+            }
+
+            // Longueur utilisable = longueur totale - marge
+            const longueurUtilisable = longueurBarre - margeTotal;
+
+            if (longueurUtilisable <= 0) {
+                alert('La marge est trop grande par rapport à la longueur de la barre !');
+                return;
+            }
+
+            // Créer une liste de toutes les pièces
+            let toutesLesPieces = [];
+            pieces.forEach(p => {
+                for (let i = 0; i < p.quantite; i++) {
+                    toutesLesPieces.push(p.longueur);
+                }
+            });
+
+            // Vérifier qu'aucune pièce ne dépasse la longueur utilisable
+            const pieceMax = Math.max(...toutesLesPieces);
+            if (pieceMax > longueurUtilisable) {
+                alert(`Erreur : Une pièce de ${pieceMax} mm est plus longue que la longueur utilisable (${longueurUtilisable} mm) !\nLongueur barre: ${longueurBarre} mm - Marge: ${margeTotal} mm = ${longueurUtilisable} mm`);
+                return;
+            }
+
+            // Trier les pièces par ordre décroissant (algorithme First Fit Decreasing)
+            toutesLesPieces.sort((a, b) => b - a);
+
+            // Algorithme d'optimisation First Fit Decreasing (FFD)
+            // IMPORTANT: Chaque pièce ajoutée consomme sa longueur + la perte de coupe
+            let barres = [];
+            
+            toutesLesPieces.forEach(piece => {
+                // Chercher une barre existante avec assez d'espace
+                // Il faut piece + perteCoupe d'espace disponible
+                let trouve = false;
+                for (let barre of barres) {
+                    const espaceNecessaire = piece + (barre.pieces.length > 0 ? perteCoupe : 0);
+                    if (barre.restant >= espaceNecessaire) {
+                        barre.pieces.push(piece);
+                        barre.restant -= espaceNecessaire;
+                        barre.pertesTotales += (barre.pieces.length > 1 ? perteCoupe : 0);
+                        trouve = true;
+                        break;
+                    }
+                }
+                
+                // Si aucune barre ne convient, créer une nouvelle barre
+                if (!trouve) {
+                    barres.push({
+                        pieces: [piece],
+                        restant: longueurUtilisable - piece,
+                        pertesTotales: 0 // Pas de perte pour la première pièce
+                    });
+                }
+            });
+
+            // Calculer les statistiques
+            const nombreBarres = barres.length;
+            const longueurTotaleUtilisee = toutesLesPieces.reduce((sum, p) => sum + p, 0);
+            const pertesTotales = barres.reduce((sum, barre) => sum + barre.pertesTotales, 0);
+            const chuteTotal = barres.reduce((sum, barre) => sum + barre.restant, 0);
+            const longueurTotaleBarres = nombreBarres * longueurUtilisable;
+            const tauxUtilisation = (longueurTotaleUtilisee / longueurTotaleBarres * 100).toFixed(1);
+
+            // Afficher les résultats
+            document.getElementById('nombreBarres').textContent = nombreBarres;
+            document.getElementById('chuteTotal').textContent = chuteTotal.toFixed(2) + ' mm';
+            document.getElementById('tauxUtilisation').textContent = tauxUtilisation + ' %';
+
+            // Ajouter les nouvelles statistiques
+            document.getElementById('pertesTotales').textContent = pertesTotales.toFixed(2) + ' mm';
+            document.getElementById('longueurUtilisable').textContent = longueurUtilisable.toFixed(2) + ' mm';
+
+            // Générer la liste des pièces pour l'impression
+            const listePiecesDetail = document.getElementById('listePiecesDetail');
+            listePiecesDetail.innerHTML = '';
+            pieces.forEach((piece, index) => {
+                const pieceDiv = document.createElement('div');
+                pieceDiv.className = 'piece-print-item';
+                pieceDiv.textContent = `  ${(index + 1).toString().padStart(2, '0')}. ${piece.longueur.toString().padStart(8, ' ')} mm  x ${piece.quantite.toString().padStart(3, ' ')}`;
+                listePiecesDetail.appendChild(pieceDiv);
+            });
+
+            // Message de statut
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="success">✓ Optimisation réussie !<br>Économie maximale avec FFD (First Fit Decreasing)<br>Marge retirée: ${margeTotal} mm | Perte par coupe: ${perteCoupe} mm</div>`;
+
+            // Afficher le plan de coupe pour chaque barre
+            const barresPlansDiv = document.getElementById('barresPlans');
+            barresPlansDiv.innerHTML = '<h3 style="color: #333; margin-bottom: 15px;">Détail des coupes par barre :</h3>';
+
+            barres.forEach((barre, index) => {
+                const utilisee = longueurUtilisable - barre.restant;
+                const piecesText = barre.pieces.join(' + ');
+                const nombreCoupes = barre.pieces.length - 1;
+                
+                barreDiv = document.createElement('div');
+                barreDiv.className = 'barre-plan';
+                
+                barreDiv.innerHTML = `
+                    <div class="barre-header">
+                        <span class="barre-title">BARRE ${(index + 1).toString().padStart(3, '0')}</span> | Chute: ${barre.restant.toFixed(1)}mm | Pertes: ${barre.pertesTotales.toFixed(1)}mm (${nombreCoupes} coupe${nombreCoupes > 1 ? 's' : ''})
+                    </div>
+                    <div style="margin: 0; padding: 0; color: #000; font-size: 12pt;">
+                        ${piecesText} mm
+                    </div>
+                    <div class="barre-visual" id="barre-${index}"></div>
+                `;
+                
+                barresPlansDiv.appendChild(barreDiv);
+
+                // Dessiner la visualisation
+                const barreVisual = document.getElementById(`barre-${index}`);
+                let position = 0;
+                
+                barre.pieces.forEach((piece, pIndex) => {
+                    // Ajouter la perte de coupe avant chaque pièce (sauf la première)
+                    if (pIndex > 0) {
+                        const pertePourcentage = (perteCoupe / longueurUtilisable) * 100;
+                        const perteDiv = document.createElement('div');
+                        perteDiv.className = 'piece-visual';
+                        perteDiv.style.left = ((position / longueurUtilisable) * 100) + '%';
+                        perteDiv.style.width = pertePourcentage + '%';
+                        perteDiv.style.background = '#ffc107';
+                        perteDiv.textContent = perteCoupe + 'mm';
+                        perteDiv.style.fontSize = '0.7em';
+                        barreVisual.appendChild(perteDiv);
+                        position += perteCoupe;
+                    }
+                    
+                    const pourcentage = (piece / longueurUtilisable) * 100;
+                    const pieceDiv = document.createElement('div');
+                    pieceDiv.className = 'piece-visual';
+                    pieceDiv.style.left = ((position / longueurUtilisable) * 100) + '%';
+                    pieceDiv.style.width = pourcentage + '%';
+                    pieceDiv.textContent = piece + 'mm';
+                    barreVisual.appendChild(pieceDiv);
+                    position += piece;
+                });
+
+                // Dessiner la chute
+                if (barre.restant > 0) {
+                    const chutePourcentage = (barre.restant / longueurUtilisable) * 100;
+                    const chuteDiv = document.createElement('div');
+                    chuteDiv.className = 'chute-visual';
+                    chuteDiv.style.left = ((position / longueurUtilisable) * 100) + '%';
+                    chuteDiv.style.width = chutePourcentage + '%';
+                    barreVisual.appendChild(chuteDiv);
+                }
+            });
+
+            // Afficher les résultats
+            document.getElementById('results').classList.add('show');
+            
+            // Afficher le bouton d'impression
+            document.getElementById('btnPrint').style.display = 'block';
+        }
+
+        function imprimerPlan() {
+            window.print();
+        }
+
+        // Permettre l'ajout avec la touche Entrée
+        document.getElementById('longueurPiece').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') ajouterPiece();
+        });
+        document.getElementById('quantitePiece').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') ajouterPiece();
+        });
+    </script>
+<footer style="text-align:center; font-size:14px; color:#6b7280; margin-top:20px;">
+        Créé par Dominique Rossier
+    </footer>
+</body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion PDF avec Rotation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            background: #e8ecff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .drop-zone i {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-list {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .file-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .file-item:hover {
+            background: #f5f5f5;
+        }
+
+        .file-item.selected {
+            background: #e8ecff;
+            border-left: 4px solid #667eea;
+        }
+
+        .file-item .file-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .middle-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .thumbnails-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 800px;
+            background: #fafafa;
+        }
+
+        .preview-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 800px;
+            background: #fafafa;
+        }
+
+        .preview-container h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .thumbnail-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .thumbnail-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .thumbnail-canvas {
+            width: 100%;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .thumbnail-controls {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .page-checkbox {
+            margin: 10px 0;
+        }
+
+        .rotation-display {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .output-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .output-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .output-section input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .preview-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 50px 20px;
+        }
+
+        .preview-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #666;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f0f0f0;
+        }
+
+        .preview-close:hover {
+            background: #e0e0e0;
+        }
+
+        .preview-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .preview-page {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-page canvas {
+            max-width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .preview-page-info {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 300px 1fr;
+            }
+            .right-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .reorder-buttons {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Fusion PDF avec Rotation</h1>
+            <p>Fusionnez, réorganisez et faites pivoter vos PDFs facilement</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="drop-zone" id="dropZone">
+                    <div style="font-size: 3em; margin-bottom: 15px;">📁</div>
+                    <p><strong>Glissez-déposez vos PDFs ici</strong></p>
+                    <p style="margin-top: 10px; color: #666;">ou</p>
+                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="document.getElementById('fileInput').click()">
+                        Parcourir les fichiers
+                    </button>
+                    <input type="file" id="fileInput" accept=".pdf" multiple>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary btn-small" onclick="clearAll()">🗑️ Effacer tout</button>
+                    <button class="btn btn-primary btn-small" onclick="updatePreview()">🔄 Actualiser aperçu</button>
+                </div>
+
+                <div class="file-list" id="fileList">
+                    <div class="empty-state">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📋</div>
+                        <p>Aucun fichier ajouté</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Panel - Thumbnails -->
+            <div class="middle-panel">
+                <div class="thumbnails-container" id="thumbnailsContainer">
+                    <div class="empty-state">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🖼️</div>
+                        <p>Sélectionnez un fichier pour voir les aperçus</p>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <label>Nom du fichier de sortie:</label>
+                    <input type="text" id="outputName" value="merged.pdf" placeholder="merged.pdf">
+                    
+                    <button class="btn btn-primary" onclick="mergePDFs()" style="width: 100%; font-size: 16px;">
+                        ⚡ Fusionner les PDFs
+                    </button>
+
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Preview -->
+            <div class="right-panel">
+                <div class="preview-container" id="previewContainer">
+                    <h3>📄 Aperçu du PDF fusionné</h3>
+                    <div id="previewContent">
+                        <div class="empty-state">
+                            <div style="font-size: 4em; margin-bottom: 20px;">👁️</div>
+                            <p>L'aperçu du PDF fusionné apparaîtra ici</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let files = [];
+        let selectedFileIndex = -1;
+
+        // Drop zone functionality
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+            addFiles(droppedFiles);
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            addFiles(Array.from(e.target.files));
+        });
+
+        async function addFiles(newFiles) {
+            for (const file of newFiles) {
+                const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+                const pages = [];
+                
+                for (let i = 0; i < pdf.numPages; i++) {
+                    pages.push({
+                        number: i,
+                        rotation: 0,
+                        included: true
+                    });
+                }
+
+                files.push({
+                    file: file,
+                    name: file.name,
+                    pages: pages,
+                    pdfDoc: pdf
+                });
+            }
+            
+            updateFileList();
+            if (files.length === 1) {
+                selectFile(0);
+            }
+            updatePreview();
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (files.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📋</div>
+                        <p>Aucun fichier ajouté</p>
+                    </div>
+                `;
+                return;
+            }
+
+            fileList.innerHTML = '';
+            files.forEach((fileInfo, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item' + (index === selectedFileIndex ? ' selected' : '');
+                div.onclick = () => selectFile(index);
+                
+                div.innerHTML = `
+                    <div class="file-name">${fileInfo.name}</div>
+                    <div class="file-controls">
+                        <div class="reorder-buttons">
+                            <button class="btn btn-secondary btn-icon btn-small" onclick="moveUp(${index}); event.stopPropagation();" ${index === 0 ? 'disabled' : ''}>↑</button>
+                            <button class="btn btn-secondary btn-icon btn-small" onclick="moveDown(${index}); event.stopPropagation();" ${index === files.length - 1 ? 'disabled' : ''}>↓</button>
+                        </div>
+                        <button class="btn btn-danger btn-icon btn-small" onclick="removeFile(${index}); event.stopPropagation();">×</button>
+                    </div>
+                `;
+                
+                fileList.appendChild(div);
+            });
+        }
+
+        function selectFile(index) {
+            selectedFileIndex = index;
+            updateFileList();
+            displayThumbnails(index);
+        }
+
+        async function displayThumbnails(fileIndex) {
+            const container = document.getElementById('thumbnailsContainer');
+            container.innerHTML = '<div class="thumbnail-grid" id="thumbnailGrid"></div>';
+            const grid = document.getElementById('thumbnailGrid');
+            
+            const fileInfo = files[fileIndex];
+            
+            for (const pageInfo of fileInfo.pages) {
+                const page = await fileInfo.pdfDoc.getPage(pageInfo.number + 1);
+                
+                const viewport = page.getViewport({ scale: 0.5, rotation: pageInfo.rotation });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.className = 'thumbnail-canvas';
+                
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                
+                const div = document.createElement('div');
+                div.className = 'thumbnail-item';
+                
+                div.innerHTML = `
+                    <div class="page-checkbox">
+                        <input type="checkbox" id="page-${fileIndex}-${pageInfo.number}" 
+                               ${pageInfo.included ? 'checked' : ''} 
+                               onchange="togglePage(${fileIndex}, ${pageInfo.number}, this.checked)">
+                        <label for="page-${fileIndex}-${pageInfo.number}">Page ${pageInfo.number + 1}</label>
+                    </div>
+                    <div class="rotation-display">Rotation: ${pageInfo.rotation}°</div>
+                    <div class="thumbnail-controls">
+                        <button class="btn btn-primary btn-small" onclick="rotatePage(${fileIndex}, ${pageInfo.number}, 90)">↻ 90°</button>
+                        <button class="btn btn-primary btn-small" onclick="rotatePage(${fileIndex}, ${pageInfo.number}, 180)">↻ 180°</button>
+                        <button class="btn btn-primary btn-small" onclick="rotatePage(${fileIndex}, ${pageInfo.number}, -90)">↺ -90°</button>
+                    </div>
+                `;
+                
+                div.insertBefore(canvas, div.firstChild);
+                grid.appendChild(div);
+            }
+        }
+
+        function togglePage(fileIndex, pageNumber, included) {
+            files[fileIndex].pages.find(p => p.number === pageNumber).included = included;
+            updatePreview();
+        }
+
+        function rotatePage(fileIndex, pageNumber, angle) {
+            const page = files[fileIndex].pages.find(p => p.number === pageNumber);
+            page.rotation = (page.rotation + angle) % 360;
+            if (page.rotation < 0) page.rotation += 360;
+            displayThumbnails(fileIndex);
+            updatePreview();
+        }
+
+        function moveUp(index) {
+            if (index > 0) {
+                [files[index - 1], files[index]] = [files[index], files[index - 1]];
+                if (selectedFileIndex === index) selectedFileIndex = index - 1;
+                else if (selectedFileIndex === index - 1) selectedFileIndex = index;
+                updateFileList();
+                updatePreview();
+            }
+        }
+
+        function moveDown(index) {
+            if (index < files.length - 1) {
+                [files[index], files[index + 1]] = [files[index + 1], files[index]];
+                if (selectedFileIndex === index) selectedFileIndex = index + 1;
+                else if (selectedFileIndex === index + 1) selectedFileIndex = index;
+                updateFileList();
+                updatePreview();
+            }
+        }
+
+        function removeFile(index) {
+            files.splice(index, 1);
+            if (selectedFileIndex === index) {
+                selectedFileIndex = files.length > 0 ? 0 : -1;
+            } else if (selectedFileIndex > index) {
+                selectedFileIndex--;
+            }
+            updateFileList();
+            if (selectedFileIndex >= 0) {
+                displayThumbnails(selectedFileIndex);
+            } else {
+                document.getElementById('thumbnailsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🖼️</div>
+                        <p>Sélectionnez un fichier pour voir les aperçus</p>
+                    </div>
+                `;
+            }
+            updatePreview();
+        }
+
+        function clearAll() {
+            if (files.length > 0 && confirm('Êtes-vous sûr de vouloir effacer tous les fichiers?')) {
+                files = [];
+                selectedFileIndex = -1;
+                updateFileList();
+                document.getElementById('thumbnailsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🖼️</div>
+                        <p>Sélectionnez un fichier pour voir les aperçus</p>
+                    </div>
+                `;
+                document.getElementById('previewContent').innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4em; margin-bottom: 20px;">👁️</div>
+                        <p>L'aperçu du PDF fusionné apparaîtra ici</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function updatePreview() {
+            const previewContent = document.getElementById('previewContent');
+            
+            if (files.length === 0) {
+                previewContent.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4em; margin-bottom: 20px;">👁️</div>
+                        <p>L'aperçu du PDF fusionné apparaîtra ici</p>
+                    </div>
+                `;
+                return;
+            }
+
+            previewContent.innerHTML = '<p style="text-align: center; padding: 20px;">Chargement de l\'aperçu...</p>';
+
+            const previewPages = document.createElement('div');
+            previewPages.style.display = 'flex';
+            previewPages.style.flexDirection = 'column';
+            previewPages.style.gap = '20px';
+
+            for (const fileInfo of files) {
+                for (const pageInfo of fileInfo.pages) {
+                    if (!pageInfo.included) continue;
+
+                    const page = await fileInfo.pdfDoc.getPage(pageInfo.number + 1);
+                    const viewport = page.getViewport({ scale: 0.8, rotation: pageInfo.rotation });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.width = '100%';
+                    canvas.style.borderRadius = '5px';
+                    canvas.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                    
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'preview-page';
+                    div.style.border = '1px solid #ddd';
+                    div.style.borderRadius = '10px';
+                    div.style.padding = '15px';
+                    div.style.textAlign = 'center';
+                    div.style.background = 'white';
+                    
+                    div.appendChild(canvas);
+                    
+                    const info = document.createElement('div');
+                    info.style.marginTop = '10px';
+                    info.style.color = '#666';
+                    info.style.fontSize = '12px';
+                    info.textContent = `${fileInfo.name} - Page ${pageInfo.number + 1} - ${pageInfo.rotation}°`;
+                    div.appendChild(info);
+                    
+                    previewPages.appendChild(div);
+                }
+            }
+
+            previewContent.innerHTML = '';
+            previewContent.appendChild(previewPages);
+        }
+
+        function closePreview() {
+            // Fonction gardée pour compatibilité mais pas utilisée
+        }
+
+        async function mergePDFs() {
+            if (files.length === 0) {
+                showNotification('Veuillez ajouter des fichiers PDF', 'warning');
+                return;
+            }
+
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                let processedPages = 0;
+                let totalPages = 0;
+
+                // Count total pages to include
+                files.forEach(fileInfo => {
+                    totalPages += fileInfo.pages.filter(p => p.included).length;
+                });
+
+                for (const fileInfo of files) {
+                    const pdfBytes = await fileInfo.file.arrayBuffer();
+                    const pdf = await PDFLib.PDFDocument.load(pdfBytes);
+
+                    for (const pageInfo of fileInfo.pages) {
+                        if (!pageInfo.included) continue;
+
+                        const [page] = await mergedPdf.copyPages(pdf, [pageInfo.number]);
+                        
+                        if (pageInfo.rotation !== 0) {
+                            page.setRotation(PDFLib.degrees(pageInfo.rotation));
+                        }
+                        
+                        mergedPdf.addPage(page);
+                        
+                        processedPages++;
+                        const progress = Math.round((processedPages / totalPages) * 100);
+                        progressFill.style.width = progress + '%';
+                        progressFill.textContent = progress + '%';
+                        
+                        // Allow UI to update
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                }
+
+                const mergedPdfBytes = await mergedPdf.save();
+                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                
+                const outputName = document.getElementById('outputName').value || 'merged.pdf';
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = outputName;
+                link.click();
+                
+                showNotification('PDF fusionné avec succès!', 'success');
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Erreur lors de la fusion:', error);
+                showNotification('Erreur lors de la fusion: ' + error.message, 'error');
+                progressBar.style.display = 'none';
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Perçage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #c7d2fe 100%);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 32px;
+        }
+        
+        .container {
+            max-width: 448px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .icon-box {
+            background: #6366f1;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .icon-box svg {
+            width: 28px;
+            height: 28px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: #6366f1;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #4f46e5;
+        }
+        
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .btn-clear {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-clear:hover {
+            color: #dc2626;
+        }
+        
+        .history-item {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #c7d2fe;
+            margin-bottom: 12px;
+        }
+        
+        .history-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-detail {
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+        
+        .history-result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        .history-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .btn-delete:hover {
+            color: #ef4444;
+        }
+        
+        .positions-grid {
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .position-tag {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .canvas-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        
+        #canvas-percage {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .drawing-info {
+            background: #f0f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1e40af;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .drawing-info-line {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .drawing-info-line strong {
+            color: #1e3a8a;
+        }
+        
+        .btn-print {
+            width: 100%;
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-print:hover {
+            background: #059669;
+        }
+        
+        .btn-print:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            background: #6b7280;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .control-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #c7d2fe;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .btn-control {
+            width: 48px;
+            height: 48px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-control:hover {
+            background: #4f46e5;
+            transform: scale(1.05);
+        }
+        
+        .btn-control:active {
+            transform: scale(0.95);
+        }
+        
+        .control-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .control-input-container {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .control-input {
+            width: 120px;
+            padding: 12px 16px;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            transition: border-color 0.3s;
+            background: white;
+        }
+        
+        .control-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .spec-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .spec-item.highlight {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+        }
+        
+        .spec-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .spec-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .spec-value-big {
+            font-size: 24px;
+            font-weight: bold;
+            color: #059669;
+        }
+        
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .positions-table th {
+            background: #6366f1;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .positions-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .positions-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .positions-table tbody tr:nth-child(odd) {
+            background: #fafafa;
+        }
+        
+        /* Styles d'impression */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .card {
+                box-shadow: none;
+                page-break-inside: avoid;
+                border: 2px solid #000;
+                margin-bottom: 20px;
+            }
+            
+            .card-header {
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .icon-box {
+                display: none;
+            }
+            
+            h1, h2 {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: #000;
+            }
+            
+            #form-container, .form-group, .info-box, .btn-primary, .btn-print, .btn-secondary, .btn-clear, .btn-delete, #history-percage, .control-section {
+                display: none !important;
+            }
+            
+            #drawing-container {
+                display: block !important;
+            }
+            
+            .canvas-container {
+                background: white;
+                border: 1px solid #000;
+                padding: 20px;
+            }
+            
+            .specs-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+            
+            .spec-item {
+                border: 1px solid #000;
+                padding: 10px;
+                background: white;
+            }
+            
+            .spec-item.highlight {
+                border: 2px solid #000;
+                background: #f0f0f0;
+            }
+            
+            .spec-label {
+                font-family: 'Courier New', monospace;
+                font-size: 10pt;
+                color: #000;
+            }
+            
+            .spec-value, .spec-value-big {
+                font-family: 'Courier New', monospace;
+                font-size: 12pt;
+                font-weight: bold;
+                color: #000;
+            }
+            
+            .positions-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                font-family: 'Courier New', monospace;
+                font-size: 11pt;
+                page-break-inside: avoid;
+            }
+            
+            .positions-table th,
+            .positions-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+            
+            .positions-table th {
+                background: #f0f0f0;
+                font-weight: bold;
+            }
+            
+            .positions-table tbody tr:nth-child(odd) {
+                background: white;
+            }
+        }
+        
+        .print-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Formulaire initial -->
+        <div id="form-container" class="card">
+            <div class="card-header">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 5h-18M3 19h18M5 5v14M19 5v14"/>
+                    </svg>
+                </div>
+                <h1>Répartition Perçage</h1>
+            </div>
+            
+            <div class="form-group">
+                <label>Longueur totale (mm)</label>
+                <input type="number" id="percage-longueur" placeholder="Ex: 1000" step="0.1">
+            </div>
+            
+            <div class="form-group">
+                <label>Distance du bout (mm)</label>
+                <input type="number" id="percage-distance" placeholder="Ex: 50" step="0.1">
+            </div>
+            
+            <div class="form-group">
+                <label>Nombre de trous</label>
+                <input type="number" id="percage-nombre" placeholder="Ex: 5" min="2" step="1">
+            </div>
+            
+            <div class="info-box">
+                <strong>Info :</strong> L'entraxe est la distance entre deux trous consécutifs
+            </div>
+            
+            <button class="btn-primary" onclick="calculerPercage()">Calculer</button>
+        </div>
+        
+        <!-- Dessin graphique avec contrôles -->
+        <div id="drawing-container" class="card hidden">
+            <div class="card-header">
+                <h2>Fiche Technique de Perçage</h2>
+            </div>
+            
+            <!-- Contrôles du nombre de trous -->
+            <div class="control-section">
+                <div class="control-label">Nombre de trous</div>
+                <div class="control-buttons">
+                    <button class="btn-control" onclick="modifierNombreTrous(-1)">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <div class="control-display" id="nombre-display">5</div>
+                    <button class="btn-control" onclick="modifierNombreTrous(1)">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contrôle de la distance du bout -->
+            <div class="control-section">
+                <div class="control-label">Distance du bout (mm)</div>
+                <div class="control-input-container">
+                    <input type="number" id="distance-edit" class="control-input" step="0.1" min="0" onchange="modifierDistance()">
+                </div>
+            </div>
+            
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Longueur totale</div>
+                    <div class="spec-value" id="spec-longueur">-</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Distance du bout</div>
+                    <div class="spec-value" id="spec-distance">-</div>
+                </div>
+                <div class="spec-item highlight">
+                    <div class="spec-label">Entraxe</div>
+                    <div class="spec-value-big" id="spec-entraxe">-</div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="canvas-percage" width="400" height="150"></canvas>
+            </div>
+            
+            <table class="positions-table" id="positions-table">
+                <thead>
+                    <tr>
+                        <th>N° Trou</th>
+                        <th>Position (mm)</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-tbody">
+                </tbody>
+            </table>
+            
+            <button class="btn-print" onclick="imprimerFiche()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Imprimer la fiche technique
+            </button>
+            
+            <button class="btn-secondary" onclick="nouvelleCalculation()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Nouvelle calculation
+            </button>
+        </div>
+        
+        <!-- Section d'impression (cachée à l'écran) -->
+    </div>
+
+    <script>
+        // État de l'application
+        let derniereCalculation = null;
+        let nombreActuel = 0;
+        let distanceActuelle = 0;
+        let longueurTotale = 0;
+
+        // Modifier le nombre de trous
+        function modifierNombreTrous(delta) {
+            if (!derniereCalculation) return;
+            
+            const nouveauNombre = nombreActuel + delta;
+            if (nouveauNombre < 2) return; // Minimum 2 trous
+            
+            nombreActuel = nouveauNombre;
+            recalculer();
+        }
+        
+        // Modifier la distance du bout
+        function modifierDistance() {
+            if (!derniereCalculation) return;
+            
+            const nouvelleDistance = parseFloat(document.getElementById('distance-edit').value);
+            
+            // Validation
+            if (isNaN(nouvelleDistance) || nouvelleDistance < 0) {
+                document.getElementById('distance-edit').value = distanceActuelle;
+                return;
+            }
+            
+            // Vérifier que 2*distance ne dépasse pas la longueur totale
+            if (2 * nouvelleDistance >= longueurTotale) {
+                alert('La distance du bout est trop grande ! (2 × distance doit être < longueur totale)');
+                document.getElementById('distance-edit').value = distanceActuelle;
+                return;
+            }
+            
+            distanceActuelle = nouvelleDistance;
+            recalculer();
+        }
+        
+        // Recalculer avec les nouvelles valeurs
+        function recalculer() {
+            const longueurUtile = longueurTotale - (2 * distanceActuelle);
+            const entraxe = (longueurUtile / (nombreActuel - 1)).toFixed(2);
+            
+            const positions = [];
+            for (let i = 0; i < nombreActuel; i++) {
+                positions.push((distanceActuelle + (i * parseFloat(entraxe))).toFixed(2));
+            }
+            
+            // Mettre à jour l'affichage
+            afficherResultats(longueurTotale, distanceActuelle, positions, entraxe);
+        }
+        
+        // Afficher les résultats
+        function afficherResultats(longueur, distance, positions, entraxe) {
+            // Mettre à jour les specs
+            document.getElementById('nombre-display').textContent = nombreActuel;
+            document.getElementById('spec-longueur').textContent = longueur + ' mm';
+            document.getElementById('spec-distance').textContent = distance + ' mm';
+            document.getElementById('spec-entraxe').textContent = entraxe + ' mm';
+            
+            // Dessiner sur le canvas
+            dessinerPieceSurCanvas('canvas-percage', longueur, distance, positions, entraxe);
+            
+            // Remplir le tableau des positions
+            const tbody = document.getElementById('positions-tbody');
+            tbody.innerHTML = '';
+            positions.forEach((pos, idx) => {
+                const row = tbody.insertRow();
+                const cellNum = row.insertCell(0);
+                const cellPos = row.insertCell(1);
+                cellNum.textContent = `T${idx + 1}`;
+                cellPos.textContent = `${pos} mm`;
+                cellNum.style.fontWeight = 'bold';
+            });
+            
+            // Sauvegarder pour l'impression
+            derniereCalculation = { longueur, distance, positions, entraxe };
+        }
+        
+        // Nouvelle calculation
+        function nouvelleCalculation() {
+            document.getElementById('form-container').classList.remove('hidden');
+            document.getElementById('drawing-container').classList.add('hidden');
+            derniereCalculation = null;
+            nombreActuel = 0;
+            distanceActuelle = 0;
+            longueurTotale = 0;
+        }
+
+        // Dessiner la pièce sur un canvas spécifique
+        function dessinerPieceSurCanvas(canvasId, longueur, distance, positions, entraxe) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dimensions du canvas
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const margin = canvasId === 'canvas-print' ? 60 : 40;
+            const pieceWidth = canvasWidth - (2 * margin);
+            const pieceHeight = canvasId === 'canvas-print' ? 80 : 60;
+            const pieceY = (canvasHeight - pieceHeight) / 2;
+            
+            // Échelle de conversion
+            const scale = pieceWidth / longueur;
+            
+            // Style pour impression ou écran
+            const isPrint = canvasId === 'canvas-print';
+            const mainColor = isPrint ? '#000000' : '#6366f1';
+            const bgColor = isPrint ? '#ffffff' : '#e0e7ff';
+            const holeColor = isPrint ? '#000000' : '#4338ca';
+            const distColor = isPrint ? '#000000' : '#ef4444';
+            const entraxeColor = isPrint ? '#000000' : '#10b981';
+            
+            // Dessiner la pièce (rectangle)
+            ctx.fillStyle = bgColor;
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = isPrint ? 3 : 2;
+            ctx.fillRect(margin, pieceY, pieceWidth, pieceHeight);
+            ctx.strokeRect(margin, pieceY, pieceWidth, pieceHeight);
+            
+            // Dessiner les trous
+            positions.forEach((pos, idx) => {
+                const x = margin + (parseFloat(pos) * scale);
+                const y = pieceY + (pieceHeight / 2);
+                
+                // Trou (cercle)
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = holeColor;
+                ctx.lineWidth = isPrint ? 3 : 2;
+                ctx.beginPath();
+                ctx.arc(x, y, isPrint ? 10 : 8, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Numéro du trou - AU-DESSUS de la pièce
+                ctx.fillStyle = holeColor;
+                ctx.font = isPrint ? 'bold 14px "Courier New"' : 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`T${idx + 1}`, x, pieceY - (isPrint ? 10 : 8));
+                
+                // Position en mm - EN DESSOUS de la pièce
+                ctx.fillStyle = isPrint ? '#000000' : '#6b7280';
+                ctx.font = isPrint ? '12px "Courier New"' : '10px Arial';
+                ctx.fillText(`${pos}mm`, x, pieceY + pieceHeight + (isPrint ? 20 : 18));
+            });
+            
+            // Dessiner les distances du bout
+            if (distance > 0) {
+                const leftX = margin + (distance * scale);
+                
+                // Ligne gauche
+                ctx.strokeStyle = distColor;
+                ctx.lineWidth = isPrint ? 2 : 1;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(margin, pieceY - 8);
+                ctx.lineTo(leftX, pieceY - 8);
+                ctx.stroke();
+                
+                // Ligne droite
+                const rightX = margin + ((longueur - distance) * scale);
+                ctx.beginPath();
+                ctx.moveTo(rightX, pieceY - 8);
+                ctx.lineTo(margin + pieceWidth, pieceY - 8);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Texte distance
+                ctx.fillStyle = distColor;
+                ctx.font = isPrint ? 'bold 12px "Courier New"' : 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${distance}mm`, margin + (distance * scale / 2), pieceY - 15);
+                ctx.fillText(`${distance}mm`, margin + pieceWidth - (distance * scale / 2), pieceY - 15);
+            }
+            
+            // Dessiner l'entraxe (si plus de 1 trou)
+            if (positions.length > 1) {
+                const x1 = margin + (parseFloat(positions[0]) * scale);
+                const x2 = margin + (parseFloat(positions[1]) * scale);
+                const y = pieceY + pieceHeight + (isPrint ? 35 : 30);
+                
+                ctx.strokeStyle = entraxeColor;
+                ctx.lineWidth = isPrint ? 3 : 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x2, y);
+                ctx.stroke();
+                
+                // Flèches
+                const arrowSize = isPrint ? 7 : 5;
+                ctx.beginPath();
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x1 + arrowSize, y - arrowSize/2);
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x1 + arrowSize, y + arrowSize/2);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x2, y);
+                ctx.lineTo(x2 - arrowSize, y - arrowSize/2);
+                ctx.moveTo(x2, y);
+                ctx.lineTo(x2 - arrowSize, y + arrowSize/2);
+                ctx.stroke();
+                
+                // Texte entraxe
+                ctx.fillStyle = entraxeColor;
+                ctx.font = isPrint ? 'bold 14px "Courier New"' : 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${entraxe}mm`, (x1 + x2) / 2, y + (isPrint ? 20 : 15));
+            }
+        }
+        
+        // Imprimer la fiche technique
+        function imprimerFiche() {
+            if (!derniereCalculation) return;
+            window.print();
+        }
+
+        // Calculer Perçage
+        function calculerPercage() {
+            const longueur = parseFloat(document.getElementById('percage-longueur').value);
+            const distance = parseFloat(document.getElementById('percage-distance').value);
+            const nombre = parseInt(document.getElementById('percage-nombre').value);
+            
+            if (!longueur || distance === '' || !nombre || longueur <= 0 || distance < 0 || nombre < 2) return;
+            
+            // Initialiser les variables globales
+            nombreActuel = nombre;
+            distanceActuelle = distance;
+            longueurTotale = longueur;
+            
+            const longueurUtile = longueur - (2 * distance);
+            const entraxe = (longueurUtile / (nombre - 1)).toFixed(2);
+            
+            const positions = [];
+            for (let i = 0; i < nombre; i++) {
+                positions.push((distance + (i * parseFloat(entraxe))).toFixed(2));
+            }
+            
+            // Masquer le formulaire et afficher les résultats
+            document.getElementById('form-container').classList.add('hidden');
+            document.getElementById('drawing-container').classList.remove('hidden');
+            
+            // Sauvegarder les données de base
+            derniereCalculation = { longueur, distance, positions, entraxe };
+            
+            // Remplir le champ de distance modifiable
+            document.getElementById('distance-edit').value = distance;
+            
+            // Afficher les résultats
+            afficherResultats(longueur, distance, positions, entraxe);
+        }
+    </script>
+ <footer style="text-align:center; font-size:14px; color:#6b7280; margin-top:20px;">
+        Créé par Dominique Rossier
+    </footer>
+</body>
+</html>

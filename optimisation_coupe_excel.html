@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimisation de Coupe - Profils Métalliques</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.85em;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .profile-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .profile-btn {
+            padding: 12px 8px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .profile-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .profile-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+        }
+
+        .profile-preview {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            text-align: center;
+        }
+
+        .profile-preview h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .pivot-btn {
+            padding: 15px;
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .pivot-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+
+        .pivot-btn.active {
+            border-color: #dc3545;
+            background: #fff5f5;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .dimension-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .dimension-inputs input {
+            padding: 6px;
+            font-size: 0.85em;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            padding: 4px 10px;
+            font-size: 0.8em;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            padding: 4px 10px;
+            font-size: 0.8em;
+            color: #000;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .pieces-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            font-size: 0.85em;
+        }
+
+        .pieces-table th {
+            background: #667eea;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .pieces-table td {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pieces-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .cutting-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Courier New', monospace;
+            background: white;
+            font-size: 10pt;
+        }
+
+        .cutting-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .cutting-table th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #667eea;
+            font-size: 9pt;
+        }
+
+        .cutting-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .cutting-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .cutting-table tbody tr:hover {
+            background: #e3f2fd;
+        }
+
+        .barre-cell {
+            font-weight: bold;
+            background: #f0f0f0;
+            text-align: center;
+        }
+
+        .piece-num {
+            font-weight: bold;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .profile-cell {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .orientation-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 18pt;
+        }
+
+        .dimension-cell {
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .longueur-cell {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .angles-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chute-cell {
+            text-align: center;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        /* Styles d'impression */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 5mm;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            h1 {
+                font-size: 14pt;
+                border-bottom: 2pt solid black;
+                padding-bottom: 3pt;
+                margin-bottom: 5pt;
+            }
+
+            .section {
+                page-break-inside: avoid;
+                margin-bottom: 5mm;
+                padding: 3mm;
+                border: none;
+            }
+
+            .section-title {
+                font-size: 10pt;
+                margin-bottom: 3pt;
+                border-bottom: 1pt solid black;
+                padding-bottom: 2pt;
+            }
+
+            .cutting-table {
+                font-size: 7.5pt;
+                border: 1pt solid black;
+            }
+
+            .cutting-table th {
+                font-size: 7pt;
+                padding: 1.5mm 1mm;
+                border: 0.5pt solid black;
+                background: #e0e0e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .cutting-table td {
+                padding: 1.5mm 1mm;
+                border: 0.5pt solid #999;
+            }
+
+            .cutting-table tbody tr:nth-child(even) {
+                background: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .barre-cell {
+                background: #d0d0d0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .profile-cell {
+                font-size: 12pt;
+            }
+
+            .orientation-display {
+                font-size: 12pt;
+            }
+
+            /* SVG rappel sens de coupe à l'impression */
+            .section > div:first-of-type svg {
+                width: 2.5cm !important;
+                height: 2.5cm !important;
+            }
+
+            @page {
+                margin: 8mm;
+                size: A4 portrait;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .edit-mode {
+            background: #fff9e6 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 OPTIMISATION DE COUPE - PROFILS MÉTALLIQUES</h1>
+
+        <!-- Configuration projet -->
+        <div class="section no-print">
+            <div class="section-title">📋 INFORMATION PROJET</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>N° Chantier</label>
+                    <input type="text" id="noChantier" placeholder="Ex: CH-2024-001">
+                </div>
+                <div class="input-group">
+                    <label>Position</label>
+                    <input type="text" id="position" placeholder="Ex: Garde-corps niveau 2">
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration barre -->
+        <div class="section no-print">
+            <div class="section-title">📏 CONFIGURATION BARRE</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Longueur barre (mm)</label>
+                    <input type="number" id="longueurBarre" value="6000" step="1" onchange="autoOptimize()">
+                </div>
+                <div class="input-group">
+                    <label>Marge totale (mm)</label>
+                    <input type="number" id="margeTotal" value="5" step="0.1" onchange="autoOptimize()">
+                </div>
+                <div class="input-group">
+                    <label>Perte par coupe (mm)</label>
+                    <input type="number" id="perteCoupe" value="3" step="0.1" onchange="autoOptimize()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout principal -->
+        <div class="main-layout no-print">
+            <!-- Colonne gauche : Ajout de pièces -->
+            <div>
+                <div class="section">
+                    <div class="section-title">✂️ AJOUT / MODIFICATION DE PIÈCES</div>
+                    
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>Type de profil</label>
+                        <div class="profile-selector">
+                            <button class="profile-btn active" onclick="selectProfile('TUBE-□')">TUBE □</button>
+                            <button class="profile-btn" onclick="selectProfile('TUBE-▬')">TUBE ▬</button>
+                            <button class="profile-btn" onclick="selectProfile('TUBE-○')">TUBE ○</button>
+                            <button class="profile-btn" onclick="selectProfile('ROND-○')">ROND ○</button>
+                            <button class="profile-btn" onclick="selectProfile('PLAT')">PLAT</button>
+                            <button class="profile-btn" onclick="selectProfile('L')">L</button>
+                            <button class="profile-btn" onclick="selectProfile('U')">U</button>
+                            <button class="profile-btn" onclick="selectProfile('IPN')">IPN</button>
+                            <button class="profile-btn" onclick="selectProfile('IPE')">IPE</button>
+                            <button class="profile-btn" onclick="selectProfile('HEA')">HEA</button>
+                            <button class="profile-btn" onclick="selectProfile('HEB')">HEB</button>
+                        </div>
+                    </div>
+
+                    <div id="dimensionsSection"></div>
+
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Quantité</label>
+                            <input type="number" id="quantite" value="1" step="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Longueur (mm)</label>
+                            <input type="number" id="longueur" step="0.1" min="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Angle gauche (°)</label>
+                            <input type="number" id="angleGauche" value="90" step="1" min="-180" max="180">
+                        </div>
+                        <div class="input-group">
+                            <label>Angle droit (°)</label>
+                            <input type="number" id="angleDroit" value="90" step="1" min="-180" max="180">
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="ajouterOuModifierPiece()" id="btnAjouter">➕ Ajouter la pièce</button>
+                </div>
+
+                <!-- Liste des pièces -->
+                <div class="section">
+                    <div class="section-title">📋 PIÈCES À DÉCOUPER</div>
+                    <div id="listePieces">
+                        <div class="empty-state">Aucune pièce ajoutée</div>
+                    </div>
+                    
+                    <!-- Boutons Import/Export -->
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn" onclick="exporterExcel()" style="background: #28a745; flex: 1;">
+                            📊 Exporter Excel
+                        </button>
+                        <label class="btn" style="background: #17a2b8; cursor: pointer; text-align: center; flex: 1; margin: 0;">
+                            📥 Importer Excel
+                            <input type="file" id="importFile" accept=".xlsx,.xls" style="display: none;" onchange="importerExcel(event)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne droite : Sélection orientation avec pivotement -->
+            <div class="profile-preview">
+                <h3 id="profileTitle">TUBE CARRÉ</h3>
+                <div id="dimensionsDisplay" style="font-size: 0.9em; color: #666; margin-bottom: 10px;"></div>
+                
+                <!-- Zone de visualisation avec bâti de scie -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ddd;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 12px; color: #dc3545; font-weight: bold;">⬇ SENS DE LA SCIE</div>
+                    </div>
+                    
+                    <!-- Affichage profil + bâti -->
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 30px; min-height: 120px;">
+                        <!-- Profil tournant -->
+                        <div id="profileDisplay" style="font-size: 80px; font-weight: bold; transition: transform 0.3s; color: #333;">□</div>
+                        
+                        <!-- Bâti de la scie (barre verticale) -->
+                        <div style="width: 30px; height: 120px; background: linear-gradient(to right, #555, #888, #555); border-radius: 5px; border: 2px solid #333; box-shadow: 3px 3px 10px rgba(0,0,0,0.3);"></div>
+                    </div>
+                    
+                    <!-- Angle actuel -->
+                    <div style="text-align: center; margin-top: 15px;">
+                        <div style="font-size: 18px; font-weight: bold; color: #667eea;" id="angleDisplay">0°</div>
+                    </div>
+                </div>
+                
+                <!-- Contrôles de pivotement -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Pivotement du profil (par 90°) :</label>
+                    
+                    <!-- Boutons de pivotement 90° uniquement -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <button class="pivot-btn active" onclick="setAngle(0)" title="0° - Normal">
+                            <div style="font-size: 30px;">□</div>
+                            <div style="font-size: 11px; margin-top: 5px;">0°</div>
+                        </button>
+                        <button class="pivot-btn" onclick="setAngle(90)" title="90° - Pivoté droite">
+                            <div style="font-size: 30px; transform: rotate(90deg);">□</div>
+                            <div style="font-size: 11px; margin-top: 5px;">90°</div>
+                        </button>
+                        <button class="pivot-btn" onclick="setAngle(180)" title="180° - Retourné">
+                            <div style="font-size: 30px; transform: rotate(180deg);">□</div>
+                            <div style="font-size: 11px; margin-top: 5px;">180°</div>
+                        </button>
+                        <button class="pivot-btn" onclick="setAngle(270)" title="270° - Pivoté gauche">
+                            <div style="font-size: 30px; transform: rotate(270deg);">□</div>
+                            <div style="font-size: 11px; margin-top: 5px;">270°</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 0.85em; color: #666; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                    <strong>💡 Astuce :</strong> Cliquez sur un bouton pour pivoter le profil par incréments de 90°.
+                </div>
+            </div>
+        </div>
+
+        <!-- Résultats -->
+        <div class="results" id="results">
+            <div class="section no-print">
+                <div class="section-title">📊 STATISTIQUES</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Barres nécessaires</div>
+                        <div class="stat-value" id="statBarres">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Chute totale</div>
+                        <div class="stat-value" id="statChute">0 mm</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Taux utilisation</div>
+                        <div class="stat-value" id="statTaux">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pertes (coupes)</div>
+                        <div class="stat-value" id="statPertes">0 mm</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 PLAN DE COUPE</div>
+                
+                <!-- Entête avec infos projet -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; background: #fff; border: 2px solid #667eea; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="font-size: 11px;">
+                        <strong>N° Chantier:</strong> <span id="printNoChantier">-</span>
+                    </div>
+                    <div style="font-size: 11px;">
+                        <strong>Position:</strong> <span id="printPosition">-</span>
+                    </div>
+                </div>
+                
+                <!-- Rappel sens de scie pour impression -->
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px; border: 2px solid #667eea;">
+                    <div style="flex: 0 0 auto; text-align: center;">
+                        <div style="font-size: 11px; font-weight: bold; color: #dc3545; margin-bottom: 3px;">SENS DE COUPE</div>
+                        <!-- SVG à 2.5x2.5cm (environ 94px à 96dpi) -->
+                        <svg width="94" height="94" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" style="border: 1px solid #999; background: white;">
+                            <rect x="70" y="150" width="150" height="110" fill="#dddddd" stroke="#000" stroke-width="2"/>
+                            <rect x="40" y="260" width="240" height="25" fill="#444"/>
+                            <rect x="220" y="100" width="25" height="185" fill="#444"/>
+                            <line x1="150" y1="60" x2="150" y2="120" stroke="red" stroke-width="6"/>
+                            <polygon points="135,120 165,120 150,145" fill="red"/>
+                        </svg>
+                    </div>
+                    
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #667eea;">BARRES NÉCESSAIRES PAR PROFIL</div>
+                        <div id="barresParProfil" style="font-size: 10px; font-family: 'Courier New', monospace; line-height: 1.6;">
+                            <!-- Sera rempli dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 0 0 auto; text-align: left; font-size: 9px; color: #666; max-width: 150px;">
+                        <div style="font-weight: bold; margin-bottom: 2px;">Légende :</div>
+                        <div>• Pièce grise</div>
+                        <div>• Flèche rouge = scie</div>
+                        <div>• Bâti noir = machine</div>
+                    </div>
+                </div>
+                
+                <table class="cutting-table" id="cuttingTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">BARRE</th>
+                            <th style="width: 40px;">N°</th>
+                            <th style="width: 120px;">DIMENSIONS</th>
+                            <th style="width: 80px;">PROFIL</th>
+                            <th style="width: 90px;">LONGUEUR</th>
+                            <th style="width: 70px;">ANGLES</th>
+                            <th style="width: 80px;">CHUTE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuttingTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn btn-primary no-print" onclick="window.print()" style="margin-top: 20px;">
+                🖨️ IMPRIMER LE PLAN DE COUPE
+            </button>
+        </div>
+    </div>
+
+    <footer style="text-align:center; font-size:11px; color:#fff; margin-top:20px; padding:10px;" class="no-print">
+        Créé par Dominique Rossier - Optimisation FFD avec regroupement par profil
+    </footer>
+
+    <script>
+        let pieces = [];
+        let profileActif = 'TUBE-□';
+        let dimensions = {};
+        let angleRotation = 0; // Angle de rotation en degrés
+        let indexEnEdition = -1;
+
+        const profileSchemas = {
+            'TUBE-□': { char: '□', dims: ['Dimension (mm)', 'Épaisseur (mm)'], title: 'TUBE CARRÉ' },
+            'TUBE-▬': { char: '▭', dims: ['Base (mm)', 'Hauteur (mm)', 'Épaisseur (mm)'], title: 'TUBE RECTANGULAIRE' },
+            'TUBE-○': { char: '○', dims: ['Ø ext. (mm)', 'Épaisseur (mm)'], title: 'TUBE ROND' },
+            'ROND-○': { char: '●', dims: ['Ø (mm)'], title: 'BARRE RONDE' },
+            'PLAT': { char: '▬', dims: ['Largeur (mm)', 'Épaisseur (mm)'], title: 'FER PLAT' },
+            'L': { char: '⌐', dims: ['Base (mm)', 'Hauteur (mm)', 'Épaisseur (mm)'], title: 'CORNIÈRE' },
+            'U': { char: '⊐', dims: ['Hauteur (mm)', 'Largeur (mm)', 'Épais. (mm)'], title: 'PROFILÉ U' },
+            'IPN': { char: 'I', dims: ['Code IPN'], title: 'IPN' },
+            'IPE': { char: 'I', dims: ['Code IPE'], title: 'IPE' },
+            'HEA': { char: 'H', dims: ['Code HEA'], title: 'HEA' },
+            'HEB': { char: 'H', dims: ['Code HEB'], title: 'HEB' }
+        };
+
+        function setAngle(angle) {
+            angleRotation = angle % 360;
+            document.getElementById('angleDisplay').textContent = angleRotation + '°';
+            document.getElementById('profileDisplay').style.transform = `rotate(${angleRotation}deg)`;
+            
+            // Mettre en surbrillance le bouton actif
+            document.querySelectorAll('.pivot-btn').forEach(btn => btn.classList.remove('active'));
+            const btnIndex = angle / 90;
+            document.querySelectorAll('.pivot-btn')[btnIndex]?.classList.add('active');
+        }
+
+        function selectProfile(type) {
+            profileActif = type;
+            dimensions = {};
+            
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            updateProfileSchema();
+            updateDimensionInputs();
+        }
+
+        function updateProfileSchema() {
+            const schema = profileSchemas[profileActif];
+            document.getElementById('profileTitle').textContent = schema.title;
+            
+            // Mettre à jour le profil affiché
+            document.getElementById('profileDisplay').textContent = schema.char;
+            
+            // Mettre à jour les boutons de pivotement
+            document.querySelectorAll('.pivot-btn div:first-child').forEach(div => {
+                div.textContent = schema.char;
+            });
+            
+            updateDimensionsDisplay();
+        }
+
+        function updateDimensionsDisplay() {
+            const dims = getDimensionsString();
+            const display = document.getElementById('dimensionsDisplay');
+            if (dims) {
+                display.textContent = `Dimensions: ${dims}`;
+                display.style.fontWeight = 'bold';
+                display.style.color = '#667eea';
+            } else {
+                display.textContent = 'Saisir les dimensions ci-dessous';
+                display.style.fontWeight = 'normal';
+                display.style.color = '#999';
+            }
+        }
+
+        function updateDimensionInputs() {
+            const schema = profileSchemas[profileActif];
+            const container = document.getElementById('dimensionsSection');
+            
+            if (!schema.dims || schema.dims.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '<div class="input-group" style="margin-bottom: 15px;"><label>Dimensions du profil</label><div class="dimension-inputs">';
+            
+            schema.dims.forEach((label, idx) => {
+                html += `
+                    <div class="input-group" style="margin: 0;">
+                        <label style="font-size: 0.75em;">${label}</label>
+                        <input type="number" id="dim${idx}" step="0.1" min="0" placeholder="${label}" onchange="updateDimensionsDisplay()">
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        function getDimensionsString() {
+            const schema = profileSchemas[profileActif];
+            if (!schema.dims || schema.dims.length === 0) return '';
+            
+            const vals = [];
+            for (let i = 0; i < schema.dims.length; i++) {
+                const val = document.getElementById(`dim${i}`)?.value;
+                if (val) vals.push(val);
+            }
+            
+            if (vals.length === 0) return '';
+            
+            // Formats spécifiques par profil
+            if (profileActif === 'TUBE-□') {
+                // TUBE CARRÉ: dimension-épaisseur (ex: 40-3)
+                return vals.length === 2 ? `${vals[0]}-${vals[1]}` : vals[0];
+            } else if (profileActif === 'TUBE-▬') {
+                // TUBE RECT: base×hauteur-épaisseur (ex: 60×40-3)
+                if (vals.length === 3) return `${vals[0]}×${vals[1]}-${vals[2]}`;
+                if (vals.length === 2) return `${vals[0]}×${vals[1]}`;
+                return vals[0];
+            } else if (profileActif === 'TUBE-○') {
+                // TUBE ROND: Øext-épaisseur (ex: Ø60-3)
+                return vals.length === 2 ? `Ø${vals[0]}-${vals[1]}` : `Ø${vals[0]}`;
+            } else if (profileActif === 'ROND-○') {
+                // BARRE RONDE: Ø uniquement (ex: Ø20)
+                return `Ø${vals[0]}`;
+            } else if (profileActif === 'PLAT') {
+                // FER PLAT: largeur×épaisseur (ex: 50×5)
+                return vals.length === 2 ? `${vals[0]}×${vals[1]}` : vals[0];
+            } else if (profileActif === 'L') {
+                // CORNIÈRE: base×hauteur-épaisseur (ex: 80×60-6)
+                if (vals.length === 3) return `${vals[0]}×${vals[1]}-${vals[2]}`;
+                if (vals.length === 2) return `${vals[0]}×${vals[1]}`;
+                return vals[0];
+            } else if (profileActif === 'U') {
+                // U: hauteur×largeur-épaisseur (ex: 120×60-8)
+                if (vals.length === 3) return `${vals[0]}×${vals[1]}-${vals[2]}`;
+                if (vals.length === 2) return `${vals[0]}×${vals[1]}`;
+                return vals[0];
+            } else if (profileActif === 'IPN') {
+                return `IPN${vals[0]}`;
+            } else if (profileActif === 'IPE') {
+                return `IPE${vals[0]}`;
+            } else if (profileActif === 'HEA') {
+                return `HEA${vals[0]}`;
+            } else if (profileActif === 'HEB') {
+                return `HEB${vals[0]}`;
+            }
+            
+            return vals.join('×');
+        }
+
+        function getProfileIcon(type) {
+            return profileSchemas[type]?.char || '■';
+        }
+
+        function ajouterOuModifierPiece() {
+            const quantite = parseInt(document.getElementById('quantite').value);
+            const longueur = parseFloat(document.getElementById('longueur').value);
+            const angleG = parseFloat(document.getElementById('angleGauche').value);
+            const angleD = parseFloat(document.getElementById('angleDroit').value);
+            const dims = getDimensionsString();
+
+            if (isNaN(quantite) || quantite <= 0) {
+                alert('Quantité invalide');
+                return;
+            }
+            if (isNaN(longueur) || longueur <= 0) {
+                alert('Longueur invalide');
+                return;
+            }
+            if (isNaN(angleG) || angleG < -180 || angleG > 180) {
+                alert('Angle gauche invalide (-180° à 180°)');
+                return;
+            }
+            if (isNaN(angleD) || angleD < -180 || angleD > 180) {
+                alert('Angle droit invalide (-180° à 180°)');
+                return;
+            }
+
+            const piece = {
+                profile: profileActif,
+                dimensions: dims,
+                quantite: quantite,
+                longueur: longueur,
+                angleGauche: angleG,
+                angleDroit: angleD,
+                angleRotation: angleRotation
+            };
+
+            if (indexEnEdition >= 0) {
+                // Modifier
+                pieces[indexEnEdition] = piece;
+                indexEnEdition = -1;
+                document.getElementById('btnAjouter').textContent = '➕ Ajouter la pièce';
+            } else {
+                // Ajouter
+                pieces.push(piece);
+            }
+
+            afficherPieces();
+            resetFormulaire();
+            autoOptimize();
+        }
+
+        function resetFormulaire() {
+            document.getElementById('longueur').value = '';
+            document.getElementById('quantite').value = '1';
+            document.getElementById('angleGauche').value = '90';
+            document.getElementById('angleDroit').value = '90';
+            document.getElementById('longueur').focus();
+        }
+
+        function editerPiece(index) {
+            const piece = pieces[index];
+            indexEnEdition = index;
+            
+            // Sélectionner le profil
+            selectProfile(piece.profile);
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.trim() === piece.profile || btn.textContent.includes(piece.profile.split('-')[0])) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Remplir les dimensions
+            setTimeout(() => {
+                if (piece.dimensions) {
+                    const vals = piece.dimensions.replace(/[IPN|IPE|HEA|HEB|Ø]/g, '').split(/[×\-]/);
+                    vals.forEach((val, i) => {
+                        const input = document.getElementById(`dim${i}`);
+                        if (input) input.value = val.trim();
+                    });
+                }
+                updateDimensionsDisplay();
+            }, 100);
+            
+            // Remplir les autres champs
+            document.getElementById('quantite').value = piece.quantite;
+            document.getElementById('longueur').value = piece.longueur;
+            document.getElementById('angleGauche').value = piece.angleGauche;
+            document.getElementById('angleDroit').value = piece.angleDroit;
+            
+            // Charger l'angle de rotation
+            if (piece.angleRotation !== undefined) {
+                setAngle(piece.angleRotation);
+            }
+            
+            document.getElementById('btnAjouter').textContent = '✏️ Modifier la pièce';
+            
+            afficherPieces();
+        }
+
+        function supprimerPiece(index) {
+            if (confirm('Supprimer cette pièce ?')) {
+                pieces.splice(index, 1);
+                afficherPieces();
+                autoOptimize();
+            }
+        }
+
+        function afficherPieces() {
+            const container = document.getElementById('listePieces');
+            
+            if (pieces.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucune pièce ajoutée</div>';
+                return;
+            }
+
+            let html = '<table class="pieces-table"><thead><tr>' +
+                '<th>Profil</th><th>Dim.</th><th>Qté</th><th>Long.</th><th>Angles</th><th>Rot.</th><th></th>' +
+                '</tr></thead><tbody>';
+
+            pieces.forEach((p, i) => {
+                let dimDisplay = p.dimensions || '-';
+                
+                const rowClass = (i === indexEnEdition) ? 'edit-mode' : '';
+                
+                // Affichage angles avec signes visibles sur une ligne SANS SVG
+                const angleG = (p.angleGauche >= 0 ? '+' : '') + p.angleGauche;
+                const angleD = (p.angleDroit >= 0 ? '+' : '') + p.angleDroit;
+                
+                html += `<tr class="${rowClass}">
+                    <td>${getProfileIcon(p.profile)} ${p.profile}</td>
+                    <td>${dimDisplay}</td>
+                    <td>${p.quantite}</td>
+                    <td style="font-weight:bold;">${p.longueur}</td>
+                    <td style="font-family: monospace; font-weight: bold; white-space: nowrap;">
+                        ${angleG}° / ${angleD}°
+                    </td>
+                    <td>${p.angleRotation || 0}°</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="editerPiece(${i})">✏️</button>
+                        <button class="btn btn-danger" onclick="supprimerPiece(${i})">✕</button>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function autoOptimize() {
+            if (pieces.length > 0) {
+                optimiser();
+            }
+        }
+
+        function optimiser() {
+            if (pieces.length === 0) {
+                return;
+            }
+
+            const longueurBarre = parseFloat(document.getElementById('longueurBarre').value);
+            const margeTotal = parseFloat(document.getElementById('margeTotal').value);
+            const perteCoupe = parseFloat(document.getElementById('perteCoupe').value);
+
+            if (isNaN(longueurBarre) || longueurBarre <= 0) return;
+
+            const longueurUtilisable = longueurBarre - margeTotal;
+
+            if (longueurUtilisable <= 0) return;
+
+            // Grouper par profil + dimensions
+            let groupes = {};
+            
+            pieces.forEach(p => {
+                const cle = `${p.profile}|${p.dimensions || 'SANS_DIM'}`;
+                
+                if (!groupes[cle]) {
+                    groupes[cle] = {
+                        profile: p.profile,
+                        dimensions: p.dimensions,
+                        pieces: []
+                    };
+                }
+                
+                for (let i = 0; i < p.quantite; i++) {
+                    groupes[cle].pieces.push({
+                        longueur: p.longueur,
+                        angleGauche: p.angleGauche,
+                        angleDroit: p.angleDroit,
+                        profile: p.profile,
+                        dimensions: p.dimensions,
+                        angleRotation: p.angleRotation || 0
+                    });
+                }
+            });
+
+            // Optimiser chaque groupe
+            let toutesLesBarres = [];
+            let statsGlobales = {
+                longueurTotaleUtilisee: 0,
+                pertesTotales: 0,
+                chuteTotal: 0
+            };
+
+            Object.values(groupes).forEach(groupe => {
+                const toutesLesPieces = groupe.pieces;
+                const maxPiece = Math.max(...toutesLesPieces.map(p => p.longueur));
+                if (maxPiece > longueurUtilisable) return;
+
+                toutesLesPieces.sort((a, b) => b.longueur - a.longueur);
+
+                let barresGroupe = [];
+                toutesLesPieces.forEach(piece => {
+                    let trouve = false;
+                    for (let barre of barresGroupe) {
+                        const espaceNecessaire = piece.longueur + (barre.pieces.length > 0 ? perteCoupe : 0);
+                        if (barre.restant >= espaceNecessaire) {
+                            barre.pieces.push(piece);
+                            barre.restant -= espaceNecessaire;
+                            barre.pertesTotales += (barre.pieces.length > 1 ? perteCoupe : 0);
+                            trouve = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!trouve) {
+                        barresGroupe.push({
+                            profile: groupe.profile,
+                            dimensions: groupe.dimensions,
+                            pieces: [piece],
+                            restant: longueurUtilisable - piece.longueur,
+                            pertesTotales: 0
+                        });
+                    }
+                });
+
+                toutesLesBarres = toutesLesBarres.concat(barresGroupe);
+                
+                statsGlobales.longueurTotaleUtilisee += toutesLesPieces.reduce((sum, p) => sum + p.longueur, 0);
+                statsGlobales.pertesTotales += barresGroupe.reduce((sum, b) => sum + b.pertesTotales, 0);
+                statsGlobales.chuteTotal += barresGroupe.reduce((sum, b) => sum + b.restant, 0);
+            });
+
+            // Stats
+            const nombreBarres = toutesLesBarres.length;
+            const longueurTotaleBarres = nombreBarres * longueurUtilisable;
+            const tauxUtilisation = ((statsGlobales.longueurTotaleUtilisee / longueurTotaleBarres) * 100).toFixed(1);
+
+            document.getElementById('statBarres').textContent = nombreBarres;
+            document.getElementById('statChute').textContent = statsGlobales.chuteTotal.toFixed(1) + ' mm';
+            document.getElementById('statTaux').textContent = tauxUtilisation + '%';
+            document.getElementById('statPertes').textContent = statsGlobales.pertesTotales.toFixed(1) + ' mm';
+
+            // Remplir les infos projet
+            document.getElementById('printNoChantier').textContent = document.getElementById('noChantier').value || '-';
+            document.getElementById('printPosition').textContent = document.getElementById('position').value || '-';
+
+            // Compter les barres par profil
+            const barresParProfilMap = {};
+            toutesLesBarres.forEach(barre => {
+                const cle = `${barre.profile}|${barre.dimensions || ''}`;
+                if (!barresParProfilMap[cle]) {
+                    barresParProfilMap[cle] = {
+                        profile: barre.profile,
+                        dimensions: barre.dimensions,
+                        count: 0
+                    };
+                }
+                barresParProfilMap[cle].count++;
+            });
+
+            // Afficher les barres par profil
+            let barresHtml = '';
+            Object.values(barresParProfilMap).forEach(item => {
+                let dimDisplay = item.dimensions || '-';
+                if (item.profile === 'IPN') dimDisplay = `IPN${dimDisplay}`;
+                else if (item.profile === 'IPE') dimDisplay = `IPE${dimDisplay}`;
+                else if (item.profile === 'HEA') dimDisplay = `HEA${dimDisplay}`;
+                else if (item.profile === 'HEB') dimDisplay = `HEB${dimDisplay}`;
+                
+                barresHtml += `<div><strong>${getProfileIcon(item.profile)} ${item.profile}</strong> ${dimDisplay} : <strong style="color: #dc3545;">${item.count} barre(s)</strong></div>`;
+            });
+            document.getElementById('barresParProfil').innerHTML = barresHtml || '<div style="color: #999;">Aucune barre</div>';
+
+            // Tableau
+            const tbody = document.getElementById('cuttingTableBody');
+            tbody.innerHTML = '';
+
+            toutesLesBarres.forEach((barre, barreIdx) => {
+                barre.pieces.forEach((piece, pieceIdx) => {
+                    const row = document.createElement('tr');
+                    
+                    let dimDisplay = piece.dimensions || '-';
+                    
+                    // Rotation du profil selon l'angle
+                    const rotation = piece.angleRotation || 0;
+                    const rotationStyle = `transform: rotate(${rotation}deg);`;
+                    
+                    // Affichage angles avec signes visibles SANS SVG
+                    const angleG = (piece.angleGauche >= 0 ? '+' : '') + piece.angleGauche;
+                    const angleD = (piece.angleDroit >= 0 ? '+' : '') + piece.angleDroit;
+                    
+                    if (pieceIdx === 0) {
+                        row.innerHTML = `
+                            <td class="barre-cell" rowspan="${barre.pieces.length}">B${String(barreIdx + 1).padStart(3, '0')}<br><small style="font-size:7pt;">${getProfileIcon(barre.profile)} ${dimDisplay}</small></td>
+                            <td class="piece-num">${pieceIdx + 1}</td>
+                            <td class="dimension-cell">${dimDisplay}</td>
+                            <td class="profile-cell">
+                                <div class="orientation-display">
+                                    <span style="${rotationStyle}">${getProfileIcon(piece.profile)}</span>
+                                </div>
+                            </td>
+                            <td class="longueur-cell">${piece.longueur}</td>
+                            <td class="angles-cell" style="font-family: monospace; white-space: nowrap;">${angleG}° / ${angleD}°</td>
+                            <td class="chute-cell" rowspan="${barre.pieces.length}">${barre.restant.toFixed(0)}</td>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <td class="piece-num">${pieceIdx + 1}</td>
+                            <td class="dimension-cell">${dimDisplay}</td>
+                            <td class="profile-cell">
+                                <div class="orientation-display">
+                                    <span style="${rotationStyle}">${getProfileIcon(piece.profile)}</span>
+                                </div>
+                            </td>
+                            <td class="longueur-cell">${piece.longueur}</td>
+                            <td class="angles-cell" style="font-family: monospace; white-space: nowrap;">${angleG}° / ${angleD}°</td>
+                        `;
+                    }
+                    
+                    tbody.appendChild(row);
+                });
+            });
+
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Event listeners
+        ['longueur', 'quantite', 'angleGauche', 'angleDroit'].forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') ajouterOuModifierPiece();
+            });
+        });
+
+        // Initialisation
+        updateProfileSchema();
+        updateDimensionInputs();
+        
+        // Activer le bouton 0° par défaut
+        setTimeout(() => {
+            setAngle(0);
+        }, 100);
+    </script>
+
+    <!-- Bibliothèque SheetJS pour Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function exporterExcel() {
+            if (pieces.length === 0) {
+                alert('Aucune pièce à exporter');
+                return;
+            }
+
+            // Préparer les données pour Excel
+            const data = pieces.map(p => ({
+                'Profil': p.profile,
+                'Dimensions': p.dimensions || '',
+                'Quantité': p.quantite,
+                'Longueur (mm)': p.longueur,
+                'Angle Gauche (°)': p.angleGauche,
+                'Angle Droit (°)': p.angleDroit,
+                'Rotation (°)': p.angleRotation || 0
+            }));
+
+            // Créer le classeur
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(data);
+
+            // Ajuster la largeur des colonnes
+            ws['!cols'] = [
+                { wch: 12 },  // Profil
+                { wch: 15 },  // Dimensions
+                { wch: 10 },  // Quantité
+                { wch: 15 },  // Longueur
+                { wch: 15 },  // Angle Gauche
+                { wch: 15 },  // Angle Droit
+                { wch: 12 }   // Rotation
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Pièces");
+
+            // Télécharger le fichier
+            const noChantier = document.getElementById('noChantier').value || 'export';
+            const fileName = `coupe_${noChantier}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        function importerExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Lire la première feuille
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+                    if (rows.length === 0) {
+                        alert('Le fichier Excel est vide');
+                        return;
+                    }
+
+                    // Vider les pièces actuelles
+                    if (pieces.length > 0) {
+                        if (!confirm('Voulez-vous remplacer les pièces actuelles ?')) {
+                            return;
+                        }
+                        pieces = [];
+                    }
+
+                    // Importer les pièces
+                    let importCount = 0;
+                    rows.forEach(row => {
+                        // Mapper les colonnes (flexible avec différents noms)
+                        const profile = row['Profil'] || row['Profile'] || row['TYPE'];
+                        const dimensions = row['Dimensions'] || row['Dimension'] || '';
+                        const quantite = parseInt(row['Quantité'] || row['Quantite'] || row['Qty'] || 1);
+                        const longueur = parseFloat(row['Longueur (mm)'] || row['Longueur'] || row['Length'] || 0);
+                        const angleGauche = parseFloat(row['Angle Gauche (°)'] || row['Angle Gauche'] || row['Angle G'] || 90);
+                        const angleDroit = parseFloat(row['Angle Droit (°)'] || row['Angle Droit'] || row['Angle D'] || 90);
+                        const angleRotation = parseFloat(row['Rotation (°)'] || row['Rotation'] || 0);
+
+                        // Validation basique
+                        if (profile && longueur > 0 && quantite > 0) {
+                            pieces.push({
+                                profile: profile,
+                                dimensions: dimensions,
+                                quantite: quantite,
+                                longueur: longueur,
+                                angleGauche: angleGauche,
+                                angleDroit: angleDroit,
+                                angleRotation: angleRotation
+                            });
+                            importCount++;
+                        }
+                    });
+
+                    // Rafraîchir l'affichage
+                    afficherPieces();
+                    autoOptimize();
+
+                    alert(`${importCount} pièce(s) importée(s) avec succès !`);
+
+                } catch (error) {
+                    alert('Erreur lors de l\'importation : ' + error.message);
+                    console.error(error);
+                }
+
+                // Réinitialiser l'input file
+                event.target.value = '';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur d'Escalier - Construction Métallique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #c7d2fe 100%);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 32px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .icon-box {
+            background: #6366f1;
+            padding: 16px;
+            border-radius: 12px;
+        }
+        
+        .icon-box svg {
+            width: 36px;
+            height: 36px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        
+        .card-full {
+            grid-column: 1 / -1;
+        }
+        
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .label-info {
+            font-weight: 400;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #78350f;
+            margin-bottom: 16px;
+        }
+        
+        .error-box {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #991b1b;
+            margin-bottom: 16px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: #6366f1;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #4f46e5;
+        }
+        
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .result-item {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #c7d2fe;
+        }
+        
+        .result-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        .result-unit {
+            font-size: 16px;
+            color: #6366f1;
+            margin-left: 4px;
+        }
+        
+        .canvas-container {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            overflow-x: auto;
+        }
+        
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .dimensions-list {
+            margin-top: 16px;
+        }
+        
+        .dimension-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .dimension-item strong {
+            color: #374151;
+        }
+        
+        .dimension-value {
+            font-weight: 600;
+            color: #6366f1;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .btn-clear {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .btn-clear:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .history-item {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #c7d2fe;
+            margin-bottom: 12px;
+        }
+        
+        .history-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-detail {
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+        
+        .history-results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .history-result-mini {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .history-result-mini .label {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        .history-result-mini .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        .history-date {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+        
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #78350f;
+        }
+        
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 22v-2l5-5v7"></path>
+                    <path d="M8 15v7"></path>
+                    <path d="M8 8v7l5-5v10"></path>
+                    <path d="M13 10v12"></path>
+                    <path d="M13 3v7l5-5v15"></path>
+                    <path d="M18 5v17"></path>
+                </svg>
+            </div>
+            <div>
+                <h1>Calculateur d'Escalier</h1>
+                <div class="subtitle">Construction métallique - Dimensions et visualisation</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                    Paramètres
+                </h2>
+                
+                <div class="form-group">
+                    <label>Hauteur à gravir (mm) <span class="label-info">du sol fini au sol fini</span></label>
+                    <input type="number" id="hauteur-totale" placeholder="Ex: 3000" step="1" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>Reculement disponible (mm) <span class="label-info">longueur au sol</span></label>
+                    <input type="number" id="reculement" placeholder="Ex: 3500" step="1" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>Marche palière <span class="label-info">(marche d'arrivée au niveau supérieur)</span></label>
+                    <select id="marche-paliere">
+                        <option value="non">Sans marche palière</option>
+                        <option value="oui">Avec marche palière</option>
+                    </select>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Normes :</strong> Hauteur de marche recommandée : 170-190 mm<br>
+                    Giron recommandé : 240-320 mm<br>
+                    Formule de Blondel : 2H + G = 600-640 mm<br>
+                    <strong>Note :</strong> Une marche virtuelle au sol est automatiquement ajoutée au calcul
+                </div>
+                
+                <button class="btn-primary" onclick="calculerEscalier()">Calculer l'escalier</button>
+            </div>
+            
+            <div class="card results" id="results">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    Résultats
+                </h2>
+                
+                <div id="validation-message"></div>
+                
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Nombre de marches</div>
+                        <div class="result-value" id="result-marches">-</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-label">Hauteur de marche</div>
+                        <div>
+                            <span class="result-value" id="result-hauteur-marche">-</span>
+                            <span class="result-unit">mm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-label">Giron</div>
+                        <div>
+                            <span class="result-value" id="result-giron">-</span>
+                            <span class="result-unit">mm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-label">Blondel</div>
+                        <div>
+                            <span class="result-value" id="result-blondel">-</span>
+                            <span class="result-unit">mm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dimensions-list">
+                    <div class="dimension-item">
+                        <span><strong>Longueur totale (reculement)</strong></span>
+                        <span class="dimension-value" id="result-longueur">-</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span><strong>Hauteur totale</strong></span>
+                        <span class="dimension-value" id="result-hauteur-totale">-</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span><strong>Pente</strong></span>
+                        <span class="dimension-value" id="result-pente">-</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span><strong>Longueur de limon</strong></span>
+                        <span class="dimension-value" id="result-limon">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card card-full results" id="visualization">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                    </svg>
+                    Visualisation
+                </h2>
+                
+                <div class="canvas-container">
+                    <canvas id="canvas-escalier"></canvas>
+                </div>
+            </div>
+            
+            <div class="card card-full" id="history" style="display: none;">
+                <div class="history-header">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Historique
+                    </h2>
+                    <button class="btn-clear" onclick="viderHistorique()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Vider
+                    </button>
+                </div>
+                <div id="history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let historique = [];
+        
+        function calculerEscalier() {
+            // Récupération des valeurs
+            const hauteurTotale = parseFloat(document.getElementById('hauteur-totale').value);
+            const reculement = parseFloat(document.getElementById('reculement').value);
+            const marchePaliere = document.getElementById('marche-paliere').value;
+            
+            if (!hauteurTotale || !reculement || hauteurTotale <= 0 || reculement <= 0) {
+                alert('Veuillez remplir tous les champs avec des valeurs positives');
+                return;
+            }
+            
+            // Calcul du nombre optimal de marches
+            // On vise une hauteur de marche entre 170 et 190 mm
+            const hauteurMarcheMin = 170;
+            const hauteurMarcheMax = 190;
+            
+            // LOGIQUE CORRIGÉE:
+            // - Nombre de marches = Nombre de girons - 1
+            // - Le reculement contient les girons (incluant la marche virtuelle)
+            // - La marche virtuelle compte comme un giron
+            // - INVERSÉ: Si SANS marche palière: la dernière marche ne prend pas de giron
+            // - Si AVEC marche palière: toutes les marches prennent un giron
+            
+            // D'abord, on calcule combien de girons on peut mettre dans le reculement
+            // en visant un giron idéal de 270-280 mm
+            let nombreGirons = Math.round(reculement / 275);
+            let giron = reculement / nombreGirons;
+            
+            // Ajuster si le giron est hors normes
+            if (giron < 240) {
+                nombreGirons--;
+                giron = reculement / nombreGirons;
+            } else if (giron > 320) {
+                nombreGirons++;
+                giron = reculement / nombreGirons;
+            }
+            
+            // Nombre de marches = Nombre de girons - 1
+            let nombreMarchesPhysiques = nombreGirons - 1;
+            
+            // INVERSÉ: Si SANS marche palière, on ajoute une marche qui ne prend pas de giron
+            if (marchePaliere === 'non') {
+                nombreMarchesPhysiques++;
+            }
+            
+            // Calcul de la hauteur de marche
+            let hauteurMarche = hauteurTotale / nombreMarchesPhysiques;
+            
+            // Vérification et ajustement si la hauteur n'est pas dans les normes
+            if (hauteurMarche < hauteurMarcheMin || hauteurMarche > hauteurMarcheMax) {
+                // Recalculer le nombre de marches pour avoir une hauteur dans les normes
+                nombreMarchesPhysiques = Math.round(hauteurTotale / 180);
+                hauteurMarche = hauteurTotale / nombreMarchesPhysiques;
+                
+                // Ajustement fin
+                if (hauteurMarche < hauteurMarcheMin) {
+                    nombreMarchesPhysiques--;
+                    hauteurMarche = hauteurTotale / nombreMarchesPhysiques;
+                } else if (hauteurMarche > hauteurMarcheMax) {
+                    nombreMarchesPhysiques++;
+                    hauteurMarche = hauteurTotale / nombreMarchesPhysiques;
+                }
+                
+                // Recalculer le nombre de girons en fonction des marches
+                if (marchePaliere === 'non') {
+                    nombreGirons = nombreMarchesPhysiques; // La dernière marche (sans palière) ne compte pas dans les girons
+                } else {
+                    nombreGirons = nombreMarchesPhysiques + 1;
+                }
+                
+                giron = reculement / nombreGirons;
+            }
+            
+            // Formule de Blondel : 2H + G doit être entre 600 et 640 mm
+            const blondel = (2 * hauteurMarche) + giron;
+            
+            // Validation selon Blondel
+            let validation = '';
+            let validationClass = '';
+            
+            if (blondel >= 600 && blondel <= 640 && hauteurMarche >= hauteurMarcheMin && hauteurMarche <= hauteurMarcheMax && giron >= 240 && giron <= 320) {
+                validation = '✓ Escalier conforme aux normes';
+                validationClass = 'info-box';
+            } else if (blondel < 590 || blondel > 650) {
+                validation = '⚠ Attention : Formule de Blondel non respectée (2H + G doit être entre 600 et 640 mm)';
+                validationClass = 'error-box';
+            } else {
+                validation = '⚠ Attention : Certaines dimensions sont à la limite des normes';
+                validationClass = 'warning-box';
+            }
+            
+            // Calcul de la pente
+            // L'angle est calculé avec la hauteur de marche et le giron
+            const angleRad = Math.atan(hauteurMarche / giron);
+            const angleDeg = angleRad * (180 / Math.PI);
+            
+            // Longueur du limon (basée sur la longueur totale de pente)
+            const longueurPente = reculement - giron;
+            const longueurLimon = Math.sqrt(Math.pow(hauteurTotale, 2) + Math.pow(longueurPente, 2));
+            
+            // Définir si on a une palière
+            const avecPaliere = marchePaliere === 'oui';
+            
+            // Affichage des résultats
+            // On affiche le nombre de marches RÉELLES (sans compter la virtuelle)
+            const nombreMarchesAffichage = avecPaliere ? nombreMarchesPhysiques : nombreMarchesPhysiques - 1;
+            document.getElementById('result-marches').textContent = nombreMarchesAffichage + (avecPaliere ? ' + palière' : '');
+            document.getElementById('result-hauteur-marche').textContent = hauteurMarche.toFixed(1);
+            document.getElementById('result-giron').textContent = giron.toFixed(1);
+            document.getElementById('result-blondel').textContent = blondel.toFixed(1);
+            document.getElementById('result-longueur').textContent = reculement.toFixed(0) + ' mm';
+            document.getElementById('result-hauteur-totale').textContent = hauteurTotale.toFixed(0) + ' mm';
+            document.getElementById('result-pente').textContent = angleDeg.toFixed(1) + '°';
+            document.getElementById('result-limon').textContent = longueurLimon.toFixed(0) + ' mm';
+            
+            // Message de validation
+            const validationDiv = document.getElementById('validation-message');
+            validationDiv.className = validationClass;
+            validationDiv.textContent = validation;
+            
+            // Affichage des sections de résultats
+            document.getElementById('results').classList.add('show');
+            document.getElementById('visualization').classList.add('show');
+            
+            // Dessin de l'escalier
+            dessinerEscalier(nombreMarchesPhysiques, hauteurMarche, giron, hauteurTotale, reculement, avecPaliere, nombreGirons);
+            
+            // Ajout à l'historique
+            const nombreMarchesHistorique = avecPaliere ? nombreMarchesPhysiques : nombreMarchesPhysiques - 1;
+            const calc = {
+                id: Date.now(),
+                hauteurTotale: hauteurTotale,
+                reculement: reculement,
+                nombreMarches: nombreMarchesHistorique,
+                nombreGirons: nombreGirons,
+                avecPaliere: avecPaliere,
+                hauteurMarche: hauteurMarche.toFixed(1),
+                giron: giron.toFixed(1),
+                blondel: blondel.toFixed(1),
+                pente: angleDeg.toFixed(1),
+                longueurLimon: longueurLimon.toFixed(0),
+                conforme: (blondel >= 600 && blondel <= 640 && hauteurMarche >= hauteurMarcheMin && hauteurMarche <= hauteurMarcheMax),
+                date: new Date().toLocaleString('fr-FR')
+            };
+            
+            historique.unshift(calc);
+            afficherHistorique();
+        }
+        
+        function dessinerEscalier(nombreMarches, hauteurMarche, giron, hauteurTotale, reculement, avecPaliere, nombreGirons) {
+            const canvas = document.getElementById('canvas-escalier');
+            const ctx = canvas.getContext('2d');
+            
+            // Configuration du canvas
+            const padding = 40;
+            const scale = 0.15; // Échelle de dessin
+            
+            canvas.width = (reculement * scale) + (2 * padding) + 100;
+            canvas.height = (hauteurTotale * scale) + (2 * padding) + 100;
+            
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Origine du dessin
+            const originX = padding;
+            const originY = canvas.height - padding;
+            
+            // Dessiner le sol
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(originX - 20, originY);
+            ctx.lineTo(originX + (reculement * scale) + 20, originY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Dessiner la MARCHE VIRTUELLE au sol (marche 0)
+            // La marche virtuelle est AU NIVEAU DU SOL (hauteur 0)
+            ctx.strokeStyle = '#9ca3af';
+            ctx.fillStyle = '#f3f4f6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 3]);
+            
+            const marcheVirtuelleWidth = giron * scale;
+            const marcheVirtuelleHeight = 15; // Hauteur fixe pour la visualisation (pas à l'échelle)
+            
+            // Rectangle au niveau du sol
+            ctx.fillRect(originX, originY - marcheVirtuelleHeight, marcheVirtuelleWidth, marcheVirtuelleHeight);
+            ctx.strokeRect(originX, originY - marcheVirtuelleHeight, marcheVirtuelleWidth, marcheVirtuelleHeight);
+            
+            // Texte "VIRTUELLE"
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('VIRTUELLE', originX + (marcheVirtuelleWidth / 2), originY - (marcheVirtuelleHeight / 2) + 3);
+            
+            ctx.setLineDash([]);
+            
+            // Dessiner les marches physiques
+            ctx.strokeStyle = '#6366f1';
+            ctx.fillStyle = '#e0e7ff';
+            ctx.lineWidth = 2;
+            
+            // INVERSÉ: Calculer combien de marches à afficher
+            // Si AVEC palière: toutes les marches
+            // Si SANS palière: marches - 1 (car la dernière ne compte pas dans l'affichage)
+            const nombreMarchesAAfficher = avecPaliere ? nombreMarches : nombreMarches - 1;
+            
+            for (let i = 0; i < nombreMarchesAAfficher; i++) {
+                // Position X: commence après la marche virtuelle
+                const x = originX + ((i + 1) * giron * scale);
+                // Position Y: monte progressivement à partir du sol
+                const y = originY - ((i + 1) * hauteurMarche * scale);
+                const largeur = giron * scale;
+                const hauteur = hauteurMarche * scale;
+                
+                // Dessin de la marche normale (vue de profil)
+                ctx.fillRect(x, y, largeur, hauteur);
+                ctx.strokeRect(x, y, largeur, hauteur);
+                
+                // Numéro de marche
+                ctx.fillStyle = '#6366f1';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(i + 1, x + (largeur / 2), y + (hauteur / 2) + 4);
+                ctx.fillStyle = '#e0e7ff';
+            }
+            
+            // Dessiner le palier (avec ou sans)
+            if (avecPaliere) {
+                // AVEC PALIER : dessiner un vrai palier
+                const i = nombreMarchesAAfficher;
+                const x = originX + ((i + 1) * giron * scale);
+                const y = originY - (nombreMarches * hauteurMarche * scale);
+                const largeur = giron * scale * 1.5;
+                const hauteur = hauteurMarche * scale;
+                
+                ctx.fillStyle = '#c7d2fe';
+                ctx.fillRect(x, y, largeur, hauteur);
+                ctx.strokeRect(x, y, largeur, hauteur);
+                
+                // Texte "PALIER"
+                ctx.fillStyle = '#6366f1';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('PALIER', x + (largeur / 2), y + (hauteur / 2) + 4);
+            } else {
+                // SANS PALIER : dessiner un palier fictif avec des pointillés alignés verticalement
+                const i = nombreMarchesAAfficher;
+                const x = originX + ((i + 1) * giron * scale);
+                const y = originY - (nombreMarches * hauteurMarche * scale);
+                const largeur = giron * scale * 1.5;
+                const hauteur = hauteurMarche * scale;
+                
+                // Palier fictif en pointillé
+                ctx.strokeStyle = '#9ca3af';
+                ctx.lineWidth = 2;
+                ctx.fillStyle = '#f9fafb';
+                
+                // Contour avec pointillés verticaux alignés
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                
+                // Ligne du bas (horizontale)
+                ctx.moveTo(x, y + hauteur);
+                ctx.lineTo(x + largeur, y + hauteur);
+                
+                // Ligne de droite (verticale) - commence à un offset pour aligner
+                ctx.moveTo(x + largeur, y + hauteur);
+                ctx.lineTo(x + largeur, y);
+                
+                // Ligne du haut (horizontale)
+                ctx.moveTo(x + largeur, y);
+                ctx.lineTo(x, y);
+                
+                // Ligne de gauche (verticale) - commence à un offset pour aligner
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + hauteur);
+                
+                ctx.stroke();
+                
+                // Remplissage
+                ctx.setLineDash([]);
+                ctx.fillRect(x, y, largeur, hauteur);
+                
+                // Texte "PALIER FICTIF"
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('PALIER', x + (largeur / 2), y + (hauteur / 2));
+                ctx.fillText('FICTIF', x + (largeur / 2), y + (hauteur / 2) + 10);
+                
+                // Remettre le style par défaut
+                ctx.strokeStyle = '#6366f1';
+                ctx.lineWidth = 2;
+            }
+            
+            // Dessiner le limon (ligne rouge qui passe par TOUS les nez de marche)
+            // Nez de marche = coin supérieur GAUCHE de chaque marche
+            // La ligne arrive au sol à 1 giron à GAUCHE de la première marche
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            // Point de départ au sol : 1 giron à gauche de la première marche
+            // La première marche est à (originX + giron * scale)
+            // Donc 1 giron à gauche = originX (au début de la marche virtuelle)
+            const xDepart = originX;
+            const yDepart = originY;
+            ctx.moveTo(xDepart, yDepart);
+            
+            // Passer par chaque nez de marche (coin supérieur GAUCHE de chaque marche)
+            for (let i = 0; i < nombreMarchesAAfficher; i++) {
+                // Coin supérieur GAUCHE de la marche i+1
+                const xNez = originX + ((i + 1) * giron * scale);
+                const yNez = originY - ((i + 1) * hauteurMarche * scale);
+                ctx.lineTo(xNez, yNez);
+            }
+            
+            // Si AVEC palier : on ne va PAS jusqu'au palier, on s'arrête à la dernière marche
+            // Si SANS palier : continuer jusqu'au palier fictif
+            if (!avecPaliere) {
+                // Seulement pour SANS palier : aller jusqu'au palier fictif
+                const xPalier = originX + ((nombreMarchesAAfficher + 1) * giron * scale);
+                const yPalier = originY - (nombreMarches * hauteurMarche * scale);
+                ctx.lineTo(xPalier, yPalier);
+            }
+            
+            ctx.stroke();
+            
+            // Annotations
+            ctx.fillStyle = '#374151';
+            ctx.font = '12px sans-serif';
+            
+            // Hauteur totale - positionnée au-dessus du palier
+            const yPalierAnnotation = originY - (nombreMarches * hauteurMarche * scale);
+            ctx.textAlign = 'left';
+            ctx.fillText(`H = ${hauteurTotale} mm`, originX + (reculement * scale) + 10, yPalierAnnotation - 10);
+            
+            // Ligne de cotation verticale pour la hauteur
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(originX + (reculement * scale) + 5, originY);
+            ctx.lineTo(originX + (reculement * scale) + 5, yPalierAnnotation);
+            ctx.stroke();
+            
+            // Flèches pour la hauteur
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(originX + (reculement * scale) + 2, originY);
+            ctx.lineTo(originX + (reculement * scale) + 8, originY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(originX + (reculement * scale) + 2, yPalierAnnotation);
+            ctx.lineTo(originX + (reculement * scale) + 8, yPalierAnnotation);
+            ctx.stroke();
+            
+            // Ligne de cotation horizontale pour le reculement (sur le sol)
+            const cotationReculementY = originY + 20;
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(originX, cotationReculementY);
+            ctx.lineTo(originX + (reculement * scale), cotationReculementY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Flèches pour le reculement
+            ctx.beginPath();
+            ctx.moveTo(originX, cotationReculementY - 3);
+            ctx.lineTo(originX, cotationReculementY + 3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(originX + (reculement * scale), cotationReculementY - 3);
+            ctx.lineTo(originX + (reculement * scale), cotationReculementY + 3);
+            ctx.stroke();
+            
+            // Texte du reculement
+            ctx.fillStyle = '#374151';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`L = ${reculement} mm`, originX + (reculement * scale) / 2, cotationReculementY + 15);
+            
+            // Légende
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${nombreGirons} girons × ${giron.toFixed(1)} mm`, padding, 20);
+            ctx.fillText(`${nombreMarchesAAfficher} marches × ${hauteurMarche.toFixed(1)} mm`, padding, 35);
+            ctx.fillText(`(+ 1 virtuelle au sol)`, padding, 50);
+        }
+        
+        function afficherHistorique() {
+            const historyDiv = document.getElementById('history');
+            const listDiv = document.getElementById('history-list');
+            
+            if (historique.length === 0) {
+                historyDiv.style.display = 'none';
+                return;
+            }
+            
+            historyDiv.style.display = 'block';
+            listDiv.innerHTML = '';
+            
+            historique.forEach(calc => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                
+                const badge = calc.conforme ? 
+                    '<span class="badge badge-ok">CONFORME</span>' : 
+                    '<span class="badge badge-warning">À VÉRIFIER</span>';
+                
+                const paliereText = calc.avecPaliere ? ' (dont palière)' : '';
+                const gironsText = calc.nombreGirons ? ` | <strong>Girons:</strong> ${calc.nombreGirons}` : '';
+                
+                item.innerHTML = `
+                    <div class="history-content">
+                        <div class="history-info">
+                            <div class="history-detail">
+                                <strong>Hauteur:</strong> ${calc.hauteurTotale} mm | 
+                                <strong>Reculement:</strong> ${calc.reculement} mm${gironsText}
+                                ${badge}
+                            </div>
+                            <div class="history-results">
+                                <div class="history-result-mini">
+                                    <div class="label">Marches</div>
+                                    <div class="value">${calc.nombreMarches}${paliereText}</div>
+                                </div>
+                                <div class="history-result-mini">
+                                    <div class="label">H. marche</div>
+                                    <div class="value">${calc.hauteurMarche} mm</div>
+                                </div>
+                                <div class="history-result-mini">
+                                    <div class="label">Giron</div>
+                                    <div class="value">${calc.giron} mm</div>
+                                </div>
+                                <div class="history-result-mini">
+                                    <div class="label">Blondel</div>
+                                    <div class="value">${calc.blondel} mm</div>
+                                </div>
+                                <div class="history-result-mini">
+                                    <div class="label">Pente</div>
+                                    <div class="value">${calc.pente}°</div>
+                                </div>
+                                <div class="history-result-mini">
+                                    <div class="label">Limon</div>
+                                    <div class="value">${calc.longueurLimon} mm</div>
+                                </div>
+                            </div>
+                            <div class="history-date">${calc.date}</div>
+                        </div>
+                        <button class="btn-delete" onclick="supprimerCalcul(${calc.id})">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                listDiv.appendChild(item);
+            });
+        }
+        
+        function supprimerCalcul(id) {
+            historique = historique.filter(c => c.id !== id);
+            afficherHistorique();
+        }
+        
+        function viderHistorique() {
+            if (confirm('Voulez-vous vraiment vider tout l\'historique ?')) {
+                historique = [];
+                afficherHistorique();
+            }
+        }
+        
+        // Calcul automatique lors de la saisie (optionnel)
+        document.getElementById('hauteur-totale').addEventListener('input', function() {
+            if (this.value && document.getElementById('reculement').value) {
+                // Auto-calcul si activé
+            }
+        });
+    </script>
+<footer style="text-align:center; font-size:14px; color:#6b7280; margin-top:20px;">
+        Créé par Dominique Rossier
+    </footer>
+</body>
+</html>

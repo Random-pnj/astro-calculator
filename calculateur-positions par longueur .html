@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Positions et Quantités</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #c7d2fe 100%);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 32px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .icon-box {
+            background: #6366f1;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .icon-box svg {
+            width: 28px;
+            height: 28px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        
+        .input-section {
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        input[type="number"],
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .btn-add {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+        
+        .btn-add:hover {
+            background: #059669;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: #6366f1;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 16px;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #4f46e5;
+        }
+        
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .btn-clear {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-clear:hover {
+            color: #dc2626;
+        }
+        
+        .pieces-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        
+        .piece-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .piece-info {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+        
+        .piece-info span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .piece-info strong {
+            color: #1f2937;
+        }
+        
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .btn-delete:hover {
+            color: #ef4444;
+        }
+        
+        .results-section {
+            margin-top: 24px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #c7d2fe;
+        }
+        
+        .summary-label {
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .positions-table thead {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .positions-table th,
+        .positions-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .positions-table th {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .positions-table td {
+            font-size: 14px;
+            color: #4b5563;
+        }
+        
+        .positions-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .position-badge {
+            background: #6366f1;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .position-tag {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .table-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .btn-export {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-export:hover {
+            background: #059669;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="card">
+            <div class="card-header">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        <path d="M9 12h6m-6 4h6"/>
+                    </svg>
+                </div>
+                <h1>Calculateur de Positions et Quantités</h1>
+            </div>
+            
+            <div class="info-box">
+                Ajoutez vos pièces avec leur quantité et longueur. Le calculateur identifiera automatiquement les longueurs uniques et leur attribuera une position.
+            </div>
+            
+            <!-- Formulaire d'ajout -->
+            <div class="input-section">
+                <label>Ajouter une pièce</label>
+                <div class="input-row">
+                    <input type="text" id="position" placeholder="Position" style="flex: 0.6;">
+                    <input type="number" id="quantite" placeholder="Quantité" min="1" step="1">
+                    <input type="number" id="longueur" placeholder="Longueur (mm)" min="0" step="0.1">
+                    <button class="btn-add" onclick="ajouterPiece()">
+                        <span>+ Ajouter</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Liste des pièces -->
+            <div id="pieces-container" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label>Pièces ajoutées (<span id="pieces-count">0</span>)</label>
+                    <button class="btn-clear" onclick="viderListe()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Vider
+                    </button>
+                </div>
+                <div class="pieces-list" id="pieces-list"></div>
+            </div>
+            
+            <button class="btn-primary" onclick="calculerPositions()" id="btn-calculer" disabled>
+                Calculer les positions
+            </button>
+        </div>
+        
+        <!-- Résultats -->
+        <div id="results" class="card hidden">
+            <h2>Résultats</h2>
+            
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-label">Longueurs à débiter</div>
+                    <div class="summary-value" id="longueurs-uniques">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Quantité totale</div>
+                    <div class="summary-value" id="quantite-totale">0</div>
+                </div>
+            </div>
+            
+            <div class="table-actions">
+                <h2 style="margin: 0;">Liste de débitage</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-export" onclick="imprimerDebitage()">
+                        <span>🖨️ Imprimer</span>
+                    </button>
+                    <button class="btn-export" onclick="exporterDebitageCSV()">
+                        <span>📥 Exporter CSV</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="positions-table">
+                    <thead>
+                        <tr>
+                            <th>Longueur (mm)</th>
+                            <th>Quantité totale</th>
+                            <th>Positions concernées</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-debitage"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let pieces = [];
+        
+        // Ajouter une pièce
+        function ajouterPiece() {
+            const position = document.getElementById('position').value.trim();
+            const quantite = parseInt(document.getElementById('quantite').value);
+            const longueur = parseFloat(document.getElementById('longueur').value);
+            
+            if (!position) {
+                alert('Veuillez entrer une position');
+                return;
+            }
+            
+            if (!quantite || quantite < 1) {
+                alert('Veuillez entrer une quantité valide');
+                return;
+            }
+            
+            if (!longueur || longueur <= 0) {
+                alert('Veuillez entrer une longueur valide');
+                return;
+            }
+            
+            pieces.push({ position, quantite, longueur });
+            
+            // Réinitialiser les champs
+            document.getElementById('position').value = '';
+            document.getElementById('quantite').value = '';
+            document.getElementById('longueur').value = '';
+            document.getElementById('position').focus();
+            
+            afficherPieces();
+            mettreAJourBouton();
+        }
+        
+        // Afficher la liste des pièces
+        function afficherPieces() {
+            const container = document.getElementById('pieces-container');
+            const list = document.getElementById('pieces-list');
+            const count = document.getElementById('pieces-count');
+            
+            if (pieces.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            count.textContent = pieces.length;
+            
+            list.innerHTML = pieces.map((piece, index) => `
+                <div class="piece-item">
+                    <div class="piece-info">
+                        <span><strong>Pos:</strong> ${piece.position}</span>
+                        <span><strong>Qté:</strong> ${piece.quantite}</span>
+                        <span><strong>Longueur:</strong> ${piece.longueur.toFixed(1)} mm</span>
+                    </div>
+                    <button class="btn-delete" onclick="supprimerPiece(${index})">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Supprimer une pièce
+        function supprimerPiece(index) {
+            pieces.splice(index, 1);
+            afficherPieces();
+            mettreAJourBouton();
+        }
+        
+        // Vider la liste
+        function viderListe() {
+            if (confirm('Voulez-vous vraiment vider toute la liste ?')) {
+                pieces = [];
+                afficherPieces();
+                mettreAJourBouton();
+                document.getElementById('results').classList.add('hidden');
+            }
+        }
+        
+        // Mettre à jour l'état du bouton calculer
+        function mettreAJourBouton() {
+            const btn = document.getElementById('btn-calculer');
+            btn.disabled = pieces.length === 0;
+        }
+        
+        // Calculer les positions
+        function calculerPositions() {
+            if (pieces.length === 0) return;
+            
+            // D'abord, grouper par position pour obtenir les infos de base
+            const groupesParPosition = {};
+            
+            pieces.forEach(piece => {
+                const position = piece.position;
+                if (!groupesParPosition[position]) {
+                    groupesParPosition[position] = {
+                        position: position,
+                        longueur: piece.longueur,
+                        quantiteTotale: 0,
+                        occurrences: 0
+                    };
+                }
+                groupesParPosition[position].quantiteTotale += piece.quantite;
+                groupesParPosition[position].occurrences += 1;
+            });
+            
+            const resultatsParPosition = Object.values(groupesParPosition).sort((a, b) => {
+                const posA = isNaN(a.position) ? a.position : parseFloat(a.position);
+                const posB = isNaN(b.position) ? b.position : parseFloat(b.position);
+                
+                if (typeof posA === 'number' && typeof posB === 'number') {
+                    return posA - posB;
+                }
+                return String(posA).localeCompare(String(posB));
+            });
+            
+            // Ensuite, regrouper par longueur unique pour la liste de débitage
+            const groupesParLongueur = {};
+            
+            Object.values(groupesParPosition).forEach(item => {
+                const longueur = item.longueur;
+                if (!groupesParLongueur[longueur]) {
+                    groupesParLongueur[longueur] = {
+                        longueur: longueur,
+                        quantiteTotale: 0,
+                        positions: [],
+                        nombrePositions: 0
+                    };
+                }
+                groupesParLongueur[longueur].quantiteTotale += item.quantiteTotale;
+                groupesParLongueur[longueur].positions.push({
+                    position: item.position,
+                    quantite: item.quantiteTotale
+                });
+                groupesParLongueur[longueur].nombrePositions += 1;
+            });
+            
+            // Trier par longueur décroissante (du plus grand au plus petit)
+            const listeDebitage = Object.values(groupesParLongueur).sort((a, b) => b.longueur - a.longueur);
+            
+            // Trier les positions dans chaque groupe
+            listeDebitage.forEach(item => {
+                item.positions.sort((a, b) => {
+                    const posA = isNaN(a.position) ? a.position : parseFloat(a.position);
+                    const posB = isNaN(b.position) ? b.position : parseFloat(b.position);
+                    
+                    if (typeof posA === 'number' && typeof posB === 'number') {
+                        return posA - posB;
+                    }
+                    return String(posA).localeCompare(String(posB));
+                });
+            });
+            
+            afficherResultats(resultatsParPosition, listeDebitage);
+        }
+        
+        // Afficher les résultats
+        function afficherResultats(resultatsParPosition, listeDebitage) {
+            const resultsDiv = document.getElementById('results');
+            const tableBodyDebitage = document.getElementById('results-table-debitage');
+            
+            // Calculer les totaux
+            const longueurUniques = listeDebitage.length;
+            const quantiteTotale = resultatsParPosition.reduce((sum, r) => sum + r.quantiteTotale, 0);
+            
+            // Mettre à jour le résumé
+            document.getElementById('longueurs-uniques').textContent = longueurUniques;
+            document.getElementById('quantite-totale').textContent = quantiteTotale;
+            
+            // Remplir le tableau de débitage
+            tableBodyDebitage.innerHTML = listeDebitage.map(item => `
+                <tr>
+                    <td><strong>${item.longueur.toFixed(1)}</strong> mm</td>
+                    <td>${item.quantiteTotale}</td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            ${item.positions.map(p => 
+                                `<span class="position-tag">${p.position} (×${p.quantite})</span>`
+                            ).join('')}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Sauvegarder pour l'export
+            window.derniersResultats = resultatsParPosition;
+            window.listeDebitage = listeDebitage;
+            
+            // Afficher la section résultats
+            resultsDiv.classList.remove('hidden');
+            
+            // Scroll vers les résultats
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Imprimer la liste de débitage
+        function imprimerDebitage() {
+            if (!window.listeDebitage || window.listeDebitage.length === 0) return;
+            
+            const date = new Date().toLocaleDateString('fr-FR');
+            const quantiteTotale = window.listeDebitage.reduce((sum, item) => sum + item.quantiteTotale, 0);
+            
+            // Créer le contenu HTML pour l'impression
+            let printContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Liste de débitage - ${date}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+            max-width: 170mm;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .header h1 {
+            font-size: 16pt;
+            margin: 0 0 5px 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .header .date {
+            font-size: 10pt;
+            margin: 5px 0;
+        }
+        
+        .summary {
+            margin: 15px 0;
+            padding: 8px;
+            border: 1px solid #000;
+            background: #f5f5f5;
+        }
+        
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+        
+        .summary-line strong {
+            text-transform: uppercase;
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            padding: 5px 0;
+            border-bottom: 2px solid #000;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        
+        th {
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10pt;
+        }
+        
+        td {
+            font-size: 11pt;
+        }
+        
+        .col-longueur {
+            width: 25%;
+            font-weight: bold;
+        }
+        
+        .col-quantite {
+            width: 20%;
+            text-align: center;
+        }
+        
+        .col-positions {
+            width: 55%;
+            font-size: 10pt;
+        }
+        
+        .col-position {
+            width: 25%;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .col-longueur-pos {
+            width: 35%;
+        }
+        
+        .col-qte-pos {
+            width: 20%;
+            text-align: center;
+        }
+        
+        .col-check {
+            width: 20%;
+            text-align: center;
+            font-size: 9pt;
+        }
+        
+        .position-item {
+            display: inline-block;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #000;
+            font-size: 9pt;
+            text-align: center;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>═══ LISTE DE DEBITAGE ═══</h1>
+        <div class="date">Date: ${date}</div>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-line">
+            <span><strong>Nombre de longueurs:</strong></span>
+            <span>${window.listeDebitage.length}</span>
+        </div>
+        <div class="summary-line">
+            <span><strong>Quantite totale:</strong></span>
+            <span>${quantiteTotale} pieces</span>
+        </div>
+    </div>
+    
+    <div class="section-title">Liste de debitage (par longueur)</div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th class="col-longueur">Longueur</th>
+                <th class="col-quantite">Quantite</th>
+                <th class="col-positions">Positions</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
+            
+            window.listeDebitage.forEach(item => {
+                const positions = item.positions.map(p => `${p.position}(x${p.quantite})`).join(' | ');
+                printContent += `
+            <tr>
+                <td class="col-longueur">${item.longueur.toFixed(1)} mm</td>
+                <td class="col-quantite">${item.quantiteTotale}</td>
+                <td class="col-positions">${positions}</td>
+            </tr>
+`;
+            });
+            
+            printContent += `
+        </tbody>
+    </table>
+    
+    <div class="section-title">Controle par position</div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th class="col-position">Position</th>
+                <th class="col-longueur-pos">Longueur</th>
+                <th class="col-qte-pos">Quantite</th>
+                <th class="col-check">Controle</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
+            
+            // Ajouter le listing des positions triées
+            window.derniersResultats.forEach(item => {
+                printContent += `
+            <tr>
+                <td class="col-position">${item.position}</td>
+                <td class="col-longueur-pos">${item.longueur.toFixed(1)} mm</td>
+                <td class="col-qte-pos">${item.quantiteTotale}</td>
+                <td class="col-check">[ ]</td>
+            </tr>
+`;
+            });
+            
+            printContent += `
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        Document genere par Calculateur de Positions et Quantites
+    </div>
+</body>
+</html>
+`;
+            
+            // Ouvrir une nouvelle fenêtre et imprimer
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Attendre que le contenu soit chargé avant d'imprimer
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.print();
+                }, 250);
+            };
+        }
+        
+        // Exporter la liste de débitage en CSV
+        function exporterDebitageCSV() {
+            if (!window.listeDebitage || window.listeDebitage.length === 0) return;
+            
+            // En-têtes
+            let csv = 'Longueur (mm);Quantité totale;Positions concernées\n';
+            
+            // Données
+            window.listeDebitage.forEach(item => {
+                const positions = item.positions.map(p => `${p.position}(×${p.quantite})`).join(', ');
+                csv += `${item.longueur.toFixed(1)};${item.quantiteTotale};"${positions}"\n`;
+            });
+            
+            // Créer le fichier et télécharger
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'debitage_' + new Date().toISOString().slice(0,10) + '.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Permettre l'ajout avec Enter
+        document.getElementById('position').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('quantite').focus();
+            }
+        });
+        
+        document.getElementById('quantite').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('longueur').focus();
+            }
+        });
+        
+        document.getElementById('longueur').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                ajouterPiece();
+            }
+        });
+    </script>
+</body>
+</html>

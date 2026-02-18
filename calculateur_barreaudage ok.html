@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Barreaudage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-label {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .result-value {
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning::before {
+            content: "⚠️";
+            font-size: 1.5em;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success::before {
+            content: "✓";
+            font-size: 1.5em;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 25px;
+            }
+        }
+
+        .visual-diagram {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .diagram-canvas {
+            width: 100%;
+            max-height: 200px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Calculateur de Barreaudage</h1>
+        <p class="subtitle">Calcul automatique avec vide maximum de 119mm</p>
+
+        <form id="calculatorForm">
+            <div class="input-group">
+                <label for="longueurTotale">Longueur totale (avec montants d'extrémité) (mm)</label>
+                <input type="number" id="longueurTotale" placeholder="Ex: 2080" required min="0" step="0.1">
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="nombreMontants">Nombre total de montants (avec extrémités)</label>
+                    <input type="number" id="nombreMontants" placeholder="Ex: 3" required min="2" step="1">
+                </div>
+
+                <div class="input-group">
+                    <label for="dimensionMontant">Dimension montant (mm)</label>
+                    <input type="number" id="dimensionMontant" placeholder="Ex: 40" required min="0" step="0.1">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="dimensionBarreau">Dimension barreau (mm)</label>
+                <input type="number" id="dimensionBarreau" placeholder="Ex: 12" required min="0" step="0.1">
+            </div>
+
+            <button type="submit" class="btn">Calculer</button>
+        </form>
+
+        <div id="results" class="results">
+            <h2 style="color: #333; margin-bottom: 20px;">📊 Résultats</h2>
+            
+            <div class="result-item">
+                <span class="result-label">Vide entre montants :</span>
+                <span class="result-value" id="longueurUtile">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Nombre de barreaux :</span>
+                <span class="result-value" id="nombreBarreaux">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Nombre total de barreaux :</span>
+                <span class="result-value" id="nombreTotalBarreaux">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Entraxe (centre à centre) :</span>
+                <span class="result-value" id="entraxe">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Vide entre barreaux :</span>
+                <span class="result-value" id="videBarreaux">-</span>
+            </div>
+
+            <div id="statusMessage"></div>
+
+            <div class="visual-diagram">
+                <h3 style="color: #555; margin-bottom: 10px;">Schéma visuel</h3>
+                <canvas id="diagramCanvas" class="diagram-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VIDE_MAX = 119; // mm
+
+        document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculer();
+        });
+
+        function calculer() {
+            // Récupération des valeurs
+            const longueurTotale = parseFloat(document.getElementById('longueurTotale').value);
+            const nombreMontants = parseInt(document.getElementById('nombreMontants').value);
+            const dimensionMontant = parseFloat(document.getElementById('dimensionMontant').value);
+            const dimensionBarreau = parseFloat(document.getElementById('dimensionBarreau').value);
+
+            // Validation
+            if (isNaN(longueurTotale) || isNaN(nombreMontants) || isNaN(dimensionMontant) || isNaN(dimensionBarreau)) {
+                alert('Veuillez remplir tous les champs avec des valeurs valides.');
+                return;
+            }
+
+            if (nombreMontants < 2) {
+                alert('Le nombre de montants doit être au minimum 2.');
+                return;
+            }
+
+            // IMPORTANT: 
+            // - La longueur totale INCLUT maintenant les 2 montants d'extrémité
+            // - Les barreaux d'extrémité sont virtuels (ils touchent les montants)
+            
+            // Calculer le vide total (longueur totale - tous les montants)
+            const videTotal = longueurTotale - (nombreMontants * dimensionMontant);
+            
+            if (videTotal <= 0) {
+                alert('La longueur totale est insuffisante pour placer tous les montants.');
+                return;
+            }
+            
+            // Nombre de montants INTERMÉDIAIRES (sans compter les 2 d'extrémité)
+            const nombreMontantsIntermediaires = nombreMontants - 2;
+            
+            // Nombre d'intervalles entre tous les montants (y compris extrémités)
+            const nombreIntervalles = nombreMontants - 1;
+            
+            // Vide par intervalle (si distribution égale)
+            const videParIntervalle = videTotal / nombreIntervalles;
+            
+            // Pour chaque intervalle : vide = n*barreau + (n+1)*espace
+            // Où n = nombre de barreaux RÉELS (les barreaux d'extrémité sont virtuels)
+            // On cherche le MINIMUM de n tel que : espace = (vide - n*barreau) / (n+1) <= 119mm
+            
+            let nombreBarreauParIntervalle = 0;
+            let videEntreBarreaux = 0;
+            let found = false;
+            
+            // Tester avec 0 barreau réel (que les virtuels aux extrémités)
+            if (videParIntervalle <= VIDE_MAX) {
+                nombreBarreauParIntervalle = 0;
+                videEntreBarreaux = videParIntervalle;
+                found = true;
+            } else {
+                // On doit ajouter des barreaux
+                for (let n = 1; n <= 100; n++) {
+                    const espaceCalcule = (videParIntervalle - n * dimensionBarreau) / (n + 1);
+                    
+                    if (espaceCalcule <= 0) {
+                        break;
+                    }
+                    
+                    if (espaceCalcule <= VIDE_MAX) {
+                        nombreBarreauParIntervalle = n;
+                        videEntreBarreaux = espaceCalcule;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!found) {
+                alert('Impossible de calculer une configuration valide.\nLe vide entre barreaux serait toujours supérieur à 119mm.');
+                return;
+            }
+
+            // Nombre total de barreaux pour toute la structure
+            const nombreTotalBarreaux = nombreBarreauParIntervalle * nombreIntervalles;
+
+            // Affichage des résultats
+            document.getElementById('longueurUtile').textContent = videParIntervalle.toFixed(2) + ' mm';
+            document.getElementById('nombreBarreaux').textContent = nombreBarreauParIntervalle + ' barreaux/intervalle';
+            document.getElementById('nombreTotalBarreaux').textContent = nombreTotalBarreaux + ' barreaux';
+            
+            const entraxe = nombreBarreauParIntervalle > 0 ? dimensionBarreau + videEntreBarreaux : 0;
+            document.getElementById('entraxe').textContent = entraxe.toFixed(2) + ' mm';
+            document.getElementById('videBarreaux').textContent = videEntreBarreaux.toFixed(2) + ' mm';
+
+            // Message de statut
+            const statusDiv = document.getElementById('statusMessage');
+            if (videEntreBarreaux <= VIDE_MAX) {
+                statusDiv.innerHTML = `<div class="success">✓ Configuration optimale avec le MINIMUM de barreaux nécessaires<br>Vide de ${videEntreBarreaux.toFixed(2)} mm (≤ ${VIDE_MAX} mm) - ${(videEntreBarreaux/VIDE_MAX*100).toFixed(1)}% du vide maximum</div>`;
+            } else {
+                statusDiv.innerHTML = `<div class="warning">⚠️ Attention : le vide de ${videEntreBarreaux.toFixed(2)} mm dépasse la limite de ${VIDE_MAX} mm !</div>`;
+            }
+
+            // Affichage des résultats
+            document.getElementById('results').classList.add('show');
+
+            // Dessiner le diagramme
+            dessinerDiagramme(longueurTotale, nombreMontants, dimensionMontant, nombreBarreauParIntervalle, dimensionBarreau, videEntreBarreaux, nombreIntervalles, videParIntervalle, nombreMontantsIntermediaires, videTotal);
+        }
+
+        function dessinerDiagramme(longueurTotale, nombreMontants, dimensionMontant, nombreBarreauParIntervalle, dimensionBarreau, videEntreBarreaux, nombreIntervalles, videParIntervalle, nombreMontantsIntermediaires, videTotal) {
+            const canvas = document.getElementById('diagramCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 180;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const margin = 20;
+            const drawWidth = width - 2 * margin;
+            const drawHeight = 100;
+            const yStart = (height - drawHeight) / 2;
+            
+            // Échelle basée sur la longueur totale
+            const scale = drawWidth / longueurTotale;
+            
+            let currentX = margin;
+            
+            // Dessiner tous les montants et intervalles
+            for (let i = 0; i < nombreMontants; i++) {
+                // Dessiner le montant
+                ctx.fillStyle = '#764ba2';
+                const montantWidth = dimensionMontant * scale;
+                ctx.fillRect(currentX, yStart, montantWidth, drawHeight);
+                
+                // Si ce n'est pas le dernier montant, dessiner l'intervalle
+                if (i < nombreMontants - 1) {
+                    currentX += montantWidth;
+                    
+                    // Dans chaque intervalle : vide + barreaux réels + vide
+                    // Les barreaux aux extrémités sont virtuels (touchent les montants)
+                    
+                    // Premier vide
+                    currentX += videEntreBarreaux * scale;
+                    
+                    // Barreaux réels
+                    for (let j = 0; j < nombreBarreauParIntervalle; j++) {
+                        ctx.fillStyle = '#667eea';
+                        const barreauWidth = dimensionBarreau * scale;
+                        ctx.fillRect(currentX, yStart, barreauWidth, drawHeight);
+                        currentX += barreauWidth;
+                        
+                        // Vide après le barreau
+                        currentX += videEntreBarreaux * scale;
+                    }
+                } else {
+                    currentX += montantWidth;
+                }
+            }
+            
+            // Légende
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'left';
+            ctx.fillText('■ Montants', margin, height - 10);
+            ctx.fillText('■ Barreaux', margin + 80, height - 10);
+            ctx.fillText('(barreaux extrémités = virtuels)', margin + 160, height - 10);
+            
+            // Flèche dimension totale (toute la longueur)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(margin, yStart - 15);
+            ctx.lineTo(margin + drawWidth, yStart - 15);
+            ctx.stroke();
+            
+            // Flèches aux extrémités
+            ctx.beginPath();
+            ctx.moveTo(margin, yStart - 20);
+            ctx.lineTo(margin, yStart - 10);
+            ctx.moveTo(margin + drawWidth, yStart - 20);
+            ctx.lineTo(margin + drawWidth, yStart - 10);
+            ctx.stroke();
+            
+            // Texte dimension
+            ctx.textAlign = 'center';
+            ctx.fillText('Longueur totale: ' + longueurTotale.toFixed(0) + ' mm', margin + drawWidth / 2, yStart - 20);
+        }
+    </script>
+    <footer style="text-align:center; font-size:14px; color:#6b7280; margin-top:20px;">
+        Créé par Dominique Rossier
+    </footer>
+</body>
+</html>
